@@ -2,14 +2,21 @@
 
 //--------------------------------------------------------------
 void ofApp::setup(){
-	GameObject* object = new GameObject;
-	GameObjects->push_back(object);
+	GameObject* player = new Player;
+	GameObjects->push_back(player);
 }
 
 //--------------------------------------------------------------
 void ofApp::update(){
 	for (int i = 0; i < GameObjects->size(); i++) {
-		(*GameObjects)[i]->update();
+		if ((*GameObjects)[i]->needs_to_be_deleted == true) {
+			GameObjects->erase(GameObjects->begin() + i);
+			//delete (*GameObjects)[i];
+		}
+	}
+
+	for (int i = 0; i < GameObjects->size(); i++) {
+		(*GameObjects)[i]->root_update(GameObjects);
 	}
 }
 
@@ -19,7 +26,7 @@ void ofApp::draw(){
 	ofTranslate(ofGetWidth() / 2, ofGetHeight() / 2);
 
 	for (int i = 0; i < GameObjects->size(); i++) {
-		(*GameObjects)[i]->draw();
+		(*GameObjects)[i]->root_draw();
 	}
 }
 
@@ -43,14 +50,14 @@ void ofApp::mouseMoved(int x, int y ){
 //--------------------------------------------------------------
 void ofApp::mouseDragged(int x, int y, int button){
 	for (int i = 0; i < GameObjects->size(); i++) {
-		(*GameObjects)[i]->mousePressed(x - ofGetWidth() / 2, y - ofGetHeight() / 2);
+		(*GameObjects)[i]->mousePressed(x - ofGetWidth() / 2, y - ofGetHeight() / 2, button);
 	}
 }
 
 //--------------------------------------------------------------
 void ofApp::mousePressed(int x, int y, int button){
 	for (int i = 0; i < GameObjects->size(); i++) {
-		(*GameObjects)[i]->mousePressed(x - ofGetWidth()/2, y - ofGetHeight()/2);
+		(*GameObjects)[i]->mousePressed(x - ofGetWidth()/2, y - ofGetHeight()/2, button);
 	}
 }
 

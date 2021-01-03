@@ -2,6 +2,7 @@
 
 #include "ofMain.h"
 #include "GameObject.h"
+#include "Player.h"
 
 class ofApp : public ofBaseApp{
 
