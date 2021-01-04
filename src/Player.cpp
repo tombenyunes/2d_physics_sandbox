@@ -19,7 +19,6 @@ void Player::update()
 {
 	if (isTeleporting) teleportPlayer();
 	updateMovementForces();
-
 }
 
 ofVec2f Player::getTeleportVector()
@@ -41,8 +40,9 @@ ofVec2f Player::getTeleportVector()
 		//cout << "left up" << endl;
 		movementDirection = 3;
 	}
-
-	return ((vel-pos) * 2 * -1);
+	cout << vel << endl;
+	//return ((vel-pos) * 2 * -1);
+	return vel.scale(2);
 	//return { (float)ofGetMouseX() - ofGetWidth() / 2, (float)ofGetMouseY() - ofGetHeight() / 2 };
 }
 
@@ -166,13 +166,16 @@ void Player::keyPressed(int key)
 	if (key == 32)
 	{
 		if (readyToTeleport == true) {
-			readyToTeleport = false;
+			/*readyToTeleport = false;
 			isTeleporting = true;
-			teleportTarget = getTeleportVector().limit(100);
+			teleportTarget = getTeleportVector();
 			vel.set(0);
 			accel.set(0);
 			ofResetElapsedTimeCounter();
-			previousMousePos = mouse_pos;
+			previousMousePos = mouse_pos;*/
+			accel += pos - ofVec2f(ofGetMouseX()-ofGetWidth()/2, ofGetMouseY()-ofGetHeight()/2);
+			vel += (accel*10).limit(10);
+			pos = getInterpolatedPosition();
 		}
 	}
 }
@@ -192,5 +195,6 @@ void Player::draw()
 	drawParticleTrail();
 
 	ofSetColor(color);
-	ofEllipse(pos.x, pos.y, radius, radius);
+	float mult = (ofMap(vel.length(), 0, 15, 1, 0.25));
+	ofEllipse(pos.x, pos.y, radius * mult, radius * mult);
 }
