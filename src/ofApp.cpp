@@ -22,7 +22,7 @@ void ofApp::update(){
 
 //--------------------------------------------------------------
 void ofApp::draw(){
-	ofBackground(30);
+	ofBackground(/*30*/0);
 	ofTranslate(ofGetWidth() / 2, ofGetHeight() / 2);
 
 	for (int i = 0; i < GameObjects->size(); i++) {
@@ -39,7 +39,9 @@ void ofApp::keyPressed(int key){
 
 //--------------------------------------------------------------
 void ofApp::keyReleased(int key){
-
+	for (int i = 0; i < GameObjects->size(); i++) {
+		(*GameObjects)[i]->keyReleased(key);
+	}
 }
 
 //--------------------------------------------------------------
