@@ -3,7 +3,7 @@
 //--------------------------------------------------------------
 void ofApp::setup(){
 	GameObject* player = new Player;
-	//GameObjects->push_back(player);
+	GameObjects->push_back(player);
 
 	GameObject* spring = new Spring(ofVec2f(-150, 0), 0.4, 0.5, 0.5, 100);
 	GameObject* spring2 = new Spring(ofVec2f(0, 0), 0.8, 0.2, 0.92, 150);

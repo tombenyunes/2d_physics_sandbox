@@ -8,6 +8,7 @@ GameObject::GameObject(ofVec2f _pos, ofColor _color)
 	vel.set(0);
 	accel.set(0);
 	radius = 35;
+	mass = 10;
 	
 	needs_to_be_deleted = false;
 
@@ -51,10 +52,11 @@ void GameObject::screenBounce()
 void GameObject::gravity()
 {
 	if (GameController->GRAVITY == 1) {
-		vel += ofVec2f(0, GRAVITY_FORCE);
+		vel += ofVec2f(0, GRAVITY_FORCE * mass);
 		vel.limit(MAXIMUM_VELOCITY);
-
+		
 		accel.set(0);
+		pos += vel;
 	}
 }
 

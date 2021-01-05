@@ -7,7 +7,7 @@
 #define MAXIMUM_ACCELERATION 0.15
 #define MAXIMUM_VELOCITY 15
 #define FRICTION 0.015
-#define GRAVITY_FORCE 0.05
+#define GRAVITY_FORCE 0.01
 
 class GameObject {
 	
@@ -44,6 +44,7 @@ protected:
 	ofVec2f accel;
 	ofColor color;		
 	float radius;
+	float mass;
 
 	// Modules
 	bool screenWrap_enabled;

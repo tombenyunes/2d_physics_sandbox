@@ -1,9 +1,10 @@
 #include "Spring.h"
 
-Spring::Spring(ofVec2f _pos, float mass, float springConst, float damping, float restPos)
+Spring::Spring(ofVec2f _pos, float _mass, float springConst, float damping, float restPos)
 {
 	// Spring drawing constants for top bar
 	pos = _pos;
+	mass = 30;
 
 	springHeight = 32;
 	width = 100;
@@ -15,14 +16,14 @@ Spring::Spring(ofVec2f _pos, float mass, float springConst, float damping, float
 	move = false;
 
 	// Spring simulation constants
-	M = mass;  // Mass
+	M = _mass;  // Mass
 	K = springConst;  // Spring constant
 	D = damping; // Damping
 	R = restPos;  // Rest position
 
 	// Spring simulation variables
 	springPos = R;   // Position
-	vel = 0.0; // Velocity
+	velocity = 0.0; // Velocity
 	accel = 0;   // Acceleration
 	f = 0;    // Force
 
@@ -35,12 +36,12 @@ void Spring::update()
 	if (!move) {
 		f = -K * (springPos - R); // f=-ky
 		accel = f / M;          // Set the acceleration, f=ma == a=f/m
-		vel = D * (vel + accel);  // Set the velocity
-		springPos = springPos + vel;        // Updated position
+		velocity = D * (velocity + accel);  // Set the velocity
+		springPos = springPos + velocity;        // Updated position
 	}
 
-	if (abs(vel) < 0.1) {
-		vel = 0.0;
+	if (abs(velocity) < 0.1) {
+		velocity = 0.0;
 	}
 
 	// Test if mouse if over the top bar
@@ -63,9 +64,9 @@ void Spring::draw()
 	// Draw base
 	ofSetColor(125);
 	ofFill();
-
+	
 	float baseWidth = 0.5 * springPos;
-	ofRect(pos.x - baseWidth, pos.y + springPos + springHeight, springPos, springHeight-springPos+200);
+	ofRect(pos.x - baseWidth, pos.y + springPos + springHeight, springPos, springHeight - springPos + 200);
 
 	// Set color and draw top bar
 	if (over || move) {
@@ -74,14 +75,15 @@ void Spring::draw()
 	else {
 		ofSetColor(204);
 	}
-	ofRect(pos.x+left, pos.y + springPos, right*2, springHeight);
-	//pos.y--;
-	//pos.x--;
+	ofRect(pos.x + left, pos.y + springPos, right * 2, springHeight);
+
+	// Bottom bar
+	ofRect(pos.x + left, pos.y + 264, right * 2, springHeight/4);
 }
 
 void Spring::mousePressed(int _x, int _y, int _button)
 {
-	move = true;
+	if (over) move = true;
 }
 
 void Spring::mouseReleased()

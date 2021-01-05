@@ -30,7 +30,7 @@ private:
 	float R;
 
 	float springPos;
-	float vel;
+	float velocity;
 	float accel;
 	float f;
 

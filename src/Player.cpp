@@ -8,6 +8,7 @@ Player::Player(ofVec2f _pos, ofColor _color)
 	vel.set(0);
 	accel.set(0);
 	radius = 35;
+	mass = 10;
 
 	// Events
 	mouse_down = false;
