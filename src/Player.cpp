@@ -148,7 +148,7 @@ void Player::updateGUI()
 void Player::drawParticleTrail()
 {
 	if (mouse_down && mouse_button == 0) {
-		GameObject* particle = new Particle{ pos + ofRandom(-radius/3, radius/3), getMovementVector() * -1, 4, ofColor(255), 255 };
+		GameObject* particle = new Particle{ pos /*+ ofRandom(-radius/3, radius/3)*/, getMovementVector() * -1, 4, ofColor(255), 255 };
 		GameObjects->push_back(particle);
 	}
 }

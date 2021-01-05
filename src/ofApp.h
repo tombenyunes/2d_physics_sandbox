@@ -4,6 +4,7 @@
 #include "GameObject.h"
 #include "Controller.h"
 #include "Player.h"
+#include "Spring.h"
 
 #include "ofxGui.h"
 #include "guiController.h"
