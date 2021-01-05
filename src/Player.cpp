@@ -217,6 +217,8 @@ void Player::keyReleased(int key)
 
 void Player::draw()
 {
+	ofSetColor(255);
+
 	if (aiming) {
 		ofPushMatrix();
 

@@ -9,8 +9,8 @@ Spring::Spring(ofVec2f _pos, float mass, float springConst, float damping, float
 	width = 100;
 	left = pos.x - width;
 	right = pos.x + width;
-	maxHeight = 800;
-	minHeight = 50;
+	maxHeight = 200;
+	minHeight = 100;
 	over = false;
 	move = false;
 
@@ -25,6 +25,8 @@ Spring::Spring(ofVec2f _pos, float mass, float springConst, float damping, float
 	vel = 0.0; // Velocity
 	accel = 0;   // Acceleration
 	f = 0;    // Force
+
+	AddModule("gravity");
 }
 
 void Spring::update()
@@ -42,7 +44,7 @@ void Spring::update()
 	}
 
 	// Test if mouse if over the top bar
-	if (ofGetMouseX()-ofGetWidth()/2 > left && ofGetMouseX()-ofGetWidth()/2 < right && ofGetMouseY()-ofGetHeight()/2 > springPos && ofGetMouseY()-ofGetHeight()/2 < springPos + springHeight) {
+	if (ofGetMouseX()-ofGetWidth()/2 > pos.x + left && ofGetMouseX()-ofGetWidth()/2 < pos.x + right && ofGetMouseY()-ofGetHeight()/2 > pos.y + springPos && ofGetMouseY()-ofGetHeight()/2 < pos.y + springPos + springHeight) {
 		over = true;
 	}
 	else {
@@ -51,7 +53,7 @@ void Spring::update()
 
 	// Set and constrain the position of top bar
 	if (move) {
-		springPos = ofGetMouseY()-ofGetHeight()/2 - springHeight / 2;
+		springPos = ofGetMouseY()-ofGetHeight()/2 - pos.y - springHeight / 2;
 		springPos = ofClamp(springPos, minHeight, maxHeight);
 	}
 }
@@ -61,20 +63,20 @@ void Spring::draw()
 	// Draw base
 	ofSetColor(125);
 	ofFill();
-	float baseWidth = 0.5 * springPos;
 
-	//cout << pos.x << "   " << baseWidth << "   " << springPos << "   " << springHeight << endl;
-	ofRect(pos.x - baseWidth, springPos + springHeight, 100, ofGetHeight());
+	float baseWidth = 0.5 * springPos;
+	ofRect(pos.x - baseWidth, pos.y + springPos + springHeight, springPos, springHeight-springPos+200);
 
 	// Set color and draw top bar
 	if (over || move) {
 		ofSetColor(255);
 	}
 	else {
-		ofSetColor(204, 0, 0);
+		ofSetColor(204);
 	}
-
-	ofRect(left, springPos, right, springPos + springHeight);
+	ofRect(pos.x+left, pos.y + springPos, right*2, springHeight);
+	//pos.y--;
+	//pos.x--;
 }
 
 void Spring::mousePressed(int _x, int _y, int _button)
