@@ -20,6 +20,7 @@ Player::Player(ofVec2f _pos, ofColor _color)
 
 	AddModule("screenBounce");
 	AddModule("gravity");
+	AddModule("ellipseCollider");
 }
 
 void Player::update()
@@ -169,7 +170,7 @@ void Player::mousePressed(int _x, int _y, int _button)
 	mouse_pos = { (float)_x, (float)_y };
 }
 
-void Player::mouseReleased()
+void Player::mouseReleased(int _x, int _y, int _button)
 {
 	mouse_down = false;
 }

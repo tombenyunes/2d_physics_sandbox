@@ -75,7 +75,8 @@ void Spring::draw()
 	else {
 		ofSetColor(204);
 	}
-	ofRect(pos.x + left, pos.y + springPos, right * 2, springHeight);
+	cout << springPos << endl;
+	ofRect(pos.x + left, pos.y, right * 2, springHeight);
 
 	// Bottom bar
 	ofRect(pos.x + left, pos.y + 264, right * 2, springHeight/4);
@@ -86,7 +87,7 @@ void Spring::mousePressed(int _x, int _y, int _button)
 	if (over) move = true;
 }
 
-void Spring::mouseReleased()
+void Spring::mouseReleased(int _x, int _y, int _button)
 {
 	move = false;
 }

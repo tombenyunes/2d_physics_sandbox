@@ -9,8 +9,8 @@ public:
 
 	Particle(ofVec2f _pos, ofVec2f _vel, float _radius, ofColor _color, int _lifetime);
 
-	void update();
-	void draw();
+	void update() override;
+	void draw() override;
 
 
 private:

@@ -7,11 +7,11 @@ class Spring : public GameObject {
 
 public:
 	Spring(ofVec2f _pos, float mass, float springConst, float damping, float restPos);
-	void update();
-	void draw();
+	void update() override;
+	void draw() override;
 
-	void mousePressed(int _x, int _y, int _button);
-	void mouseReleased();
+	void mousePressed(int _x, int _y, int _button) override;
+	void mouseReleased(int _x, int _y, int _button) override;
 
 private:
 

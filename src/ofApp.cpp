@@ -5,15 +5,19 @@ void ofApp::setup(){
 	GameObject* player = new Player;
 	GameObjects->push_back(player);
 
-	GameObject* spring = new Spring(ofVec2f(-150, 0), 0.4, 0.5, 0.5, 100);
-	GameObject* spring2 = new Spring(ofVec2f(0, 0), 0.8, 0.2, 0.92, 150);
-	GameObject* spring3 = new Spring(ofVec2f(150, 0), 2, 0.3, 0.8, 175);
+	GameObject* spring = new Spring(ofVec2f(0, 0), 0.8, 0.2, 0.92, 150);
 	//GameObjects->push_back(spring);
-	GameObjects->push_back(spring2);
-	//GameObjects->push_back(spring3);
+	for (int i = 0; i < 10; i++) {
+		GameObject* object = new Object(5, 17.5);
+		GameObjects->push_back(object);
+	}
+	GameObject* object2 = new Object(100, 125);
+	GameObjects->push_back(object2);
 	
 	GameController = new Controller;
 	gui_Controller = new guiController;
+
+	CollisionDetector = new Collisions;
 }
 
 //--------------------------------------------------------------
@@ -26,11 +30,8 @@ void ofApp::update(){
 	}
 
 	for (int i = 0; i < GameObjects->size(); i++) {
-		(*GameObjects)[i]->root_update(GameObjects, GameController, gui_Controller);
+		(*GameObjects)[i]->root_update(GameObjects, GameController, gui_Controller, CollisionDetector);
 	}
-
-	//gui_Controller->update();
-	//gui_Controller->acceleration++;
 }
 
 //--------------------------------------------------------------
@@ -45,13 +46,21 @@ void ofApp::draw(){
 	}
 	ofPopMatrix();
 
-	gui_Controller->gui.draw();
+	if (draw_gui) {
+		gui_Controller->gui.draw();
+		if (GameController->OBJECT_SELECTED) {
+			gui_Controller->gui2.draw();
+		}
+	}
 }
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key){
 	for (int i = 0; i < GameObjects->size(); i++) {
 		(*GameObjects)[i]->keyPressed(key);
+	}
+	if (key == 102) {
+		(draw_gui) ? draw_gui = false : draw_gui = true;
 	}
 }
 
@@ -84,7 +93,7 @@ void ofApp::mousePressed(int x, int y, int button){
 //--------------------------------------------------------------
 void ofApp::mouseReleased(int x, int y, int button){
 	for (int i = 0; i < GameObjects->size(); i++) {
-		(*GameObjects)[i]->mouseReleased();
+		(*GameObjects)[i]->mouseReleased(x - ofGetWidth()/2, y - ofGetHeight()/2, button);
 	}
 }
 

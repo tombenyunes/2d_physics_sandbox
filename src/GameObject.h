@@ -3,6 +3,7 @@
 #include "ofMain.h"
 #include "Controller.h"
 #include "guiController.h"
+#include "Collisions.h"
 
 #define MAXIMUM_ACCELERATION 0.15
 #define MAXIMUM_VELOCITY 15
@@ -17,12 +18,14 @@ public:
 
 	void AddModule(string _id);
 
-	void root_update(vector<GameObject*>* _gameobjects, Controller* _controller, guiController* _guiController);
+	void root_update(vector<GameObject*>* _gameobjects, Controller* _controller, guiController* _guiController, Collisions* _collisionDetector);
 	virtual void update();
+
+	virtual void isColliding(GameObject* _other);
 
 	// Event functions
 	virtual void mousePressed(int _x, int _y, int _button);
-	virtual void mouseReleased();
+	virtual void mouseReleased(int _x, int _y, int _button);
 	virtual void keyPressed(int key);
 	virtual void keyReleased(int key);
 
@@ -33,8 +36,11 @@ public:
 	vector<GameObject*>* GameObjects;
 	Controller* GameController;
 	guiController* gui_Controller;
+	Collisions* CollisionDetector;
 
 	bool needs_to_be_deleted;
+	bool mouseOver;
+	bool active;
 
 protected:
 	
@@ -50,6 +56,8 @@ protected:
 	bool screenWrap_enabled;
 	bool screenBounce_enabled;
 	bool gravity_enabled;
+	bool ellipseCollider_enabled;
+	bool mouseHover_enabled;
 
 private:
 
@@ -57,5 +65,7 @@ private:
 	void screenWrap();
 	void screenBounce();
 	void gravity();
+	void ellipseCollider();
+	void mouseHover();
 
 };

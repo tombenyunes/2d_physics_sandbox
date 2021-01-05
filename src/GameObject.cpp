@@ -11,10 +11,14 @@ GameObject::GameObject(ofVec2f _pos, ofColor _color)
 	mass = 10;
 	
 	needs_to_be_deleted = false;
+	mouseOver = false;
+	active = false;
 
 	screenWrap_enabled = false;
 	screenBounce_enabled = false;
 	gravity_enabled = false;
+	ellipseCollider_enabled = false;
+	mouseHover_enabled = false;
 }
 
 void GameObject::screenWrap()
@@ -60,6 +64,31 @@ void GameObject::gravity()
 	}
 }
 
+void GameObject::ellipseCollider()
+{
+	for (int i = 0; i < GameObjects->size(); i++) {
+		if ((*GameObjects)[i]->ellipseCollider_enabled) {
+			if ((*GameObjects)[i] != this) {
+				if (CollisionDetector->EllipseCompare(pos, radius, (*GameObjects)[i]->pos, (*GameObjects)[i]->radius)) {
+					isColliding((*GameObjects)[i]);
+				}
+			}
+		}
+	}
+}
+
+void GameObject::mouseHover()
+{
+	if (CollisionDetector->EllipseCompare(pos, radius, ofVec2f(ofGetMouseX()-ofGetWidth()/2, ofGetMouseY()-ofGetHeight()/2), 0)) {
+		color = ofColor(255, 0, 0);
+		mouseOver = true;
+	}
+	else {
+		color = ofColor(255);
+		mouseOver = false;
+	}
+}
+
 void GameObject::AddModule(string _id)
 {
 	if (_id == "screenWrap") {
@@ -74,18 +103,27 @@ void GameObject::AddModule(string _id)
 		//cout << "gravity module added" << endl;
 		gravity_enabled = true;
 	}
+	else if (_id == "ellipseCollider") {
+		//cout << "gravity module added" << endl;
+		ellipseCollider_enabled = true;
+	}
+	else if (_id == "mouseHover") {
+		//cout << "gravity module added" << endl;
+		mouseHover_enabled = true;
+	}
 	else {
 		cout << "Error: Module ID is invalid" << endl;
 	}
 }
 
-void GameObject::root_update(vector<GameObject*>* _gameobjects, Controller* _controller, guiController* _guiController)
+void GameObject::root_update(vector<GameObject*>* _gameobjects, Controller* _controller, guiController* _guiController, Collisions* _collisionDetector)
 {
 	if (!needs_to_be_deleted) {
 
 		GameObjects = _gameobjects;
 		GameController = _controller;
 		gui_Controller = _guiController;
+		CollisionDetector = _collisionDetector;
 
 		if (screenWrap_enabled) {
 			screenWrap();
@@ -95,6 +133,12 @@ void GameObject::root_update(vector<GameObject*>* _gameobjects, Controller* _con
 		}
 		if (gravity_enabled) {
 			gravity();
+		}
+		if (ellipseCollider_enabled) {
+			ellipseCollider();
+		}
+		if (mouseHover_enabled) {
+			mouseHover();
 		}
 
 		update();
@@ -120,12 +164,18 @@ void GameObject::mousePressed(int _x, int _y, int _button)
 {
 }
 
-void GameObject::mouseReleased()
+void GameObject::mouseReleased(int _x, int _y, int _button)
 {
 }
 
 void GameObject::keyPressed(int key)
 {
+}
+
+void GameObject::isColliding(GameObject* _other)
+{
+	ofVec2f forceVec = pos - _other->pos;
+	accel += forceVec / mass;
 }
 
 void GameObject::keyReleased(int key)

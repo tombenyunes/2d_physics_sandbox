@@ -5,9 +5,11 @@
 #include "Controller.h"
 #include "Player.h"
 #include "Spring.h"
+#include "Object.h"
 
 #include "ofxGui.h"
 #include "guiController.h"
+#include "Collisions.h"
 
 class ofApp : public ofBaseApp{
 
@@ -33,5 +35,9 @@ class ofApp : public ofBaseApp{
 
 		Controller* GameController;
 		guiController* gui_Controller;
+
+		Collisions* CollisionDetector;
+
+		bool draw_gui = true;
 
 };
