@@ -9,14 +9,21 @@ Player::Player(ofVec2f _pos, ofColor _color)
 	accel.set(0);
 	radius = 35;
 
+	// Events
+	mouse_down = false;
+	mouse_button = -1;
+
+	// Teleporting
 	readyToTeleport = true;
 	isTeleporting = false;
 
 	AddModule("screenBounce");
+	AddModule("gravity");
 }
 
 void Player::update()
 {
+	//updateGUI();
 	if (isTeleporting) teleportPlayer();
 	updateMovementForces();
 }
@@ -75,15 +82,15 @@ void Player::teleportPlayer()
 	}
 }
 
-void Player::applyFriction()
+ofVec2f Player::applyFriction()
 {
-	if (!mouse_down) {
-		friction = vel;
-		friction *= -1;
+	//if (!mouse_down) {
+		friction = vel * -1;
+		//friction.normalize(); // normalizing breaks ui
 		friction *= FRICTION;
-	}
-
-	accel += friction;
+	//}
+	
+	return accel += friction;
 }
 
 ofVec2f Player::getMovementVector()
@@ -95,7 +102,7 @@ ofVec2f Player::getMovementVector()
 
 ofVec2f Player::getAcceleration()
 {
-	applyFriction();
+	accel = applyFriction();
 	if (mouse_down && mouse_button == 0) {
 		accel += getMovementVector();
 	}
@@ -127,33 +134,44 @@ void Player::updateMovementForces()
 	vel += getAcceleration();
 	vel.limit(MAXIMUM_VELOCITY);
 	pos = getInterpolatedPosition();
+	
+	updateGUI();
 
 	accel.set(0);
+}
+
+void Player::updateGUI()
+{
+	gui_Controller->updateValues(pos, vel, accel);
 }
 
 void Player::drawParticleTrail()
 {
 	if (mouse_down && mouse_button == 0) {
-		GameObject* particle = new Particle{ pos + ofRandom(-radius/3, radius/3), getMovementVector() * -1, 4, ofColor(255), 255 };/*
-		GameObject* particle2 = new Particle{ pos + ofRandom(-radius / 3, radius / 3), getMovementVector() * -1, 4, ofColor(255), 255 };
-		GameObject* particle3 = new Particle{ pos + ofRandom(-radius / 3, radius / 3), getMovementVector() * -1, 4, ofColor(255), 255 };
-		GameObject* particle4 = new Particle{ pos + ofRandom(-radius / 3, radius / 3), getMovementVector() * -1, 4, ofColor(255), 255 };
-		GameObject* particle5 = new Particle{ pos + ofRandom(-radius / 3, radius / 3), getMovementVector() * -1, 4, ofColor(255), 255 };
-		GameObject* particle6 = new Particle{ pos + ofRandom(-radius / 3, radius / 3), getMovementVector() * -1, 4, ofColor(255), 255 };
-		GameObject* particle7 = new Particle{ pos + ofRandom(-radius / 3, radius / 3), getMovementVector() * -1, 4, ofColor(255), 255 };
-		GameObject* particle8 = new Particle{ pos + ofRandom(-radius / 3, radius / 3), getMovementVector() * -1, 4, ofColor(255), 255 };*/
-		GameObjects->push_back(particle);/*
-		GameObjects->push_back(particle2);
-		GameObjects->push_back(particle3);
-		GameObjects->push_back(particle4);
-		GameObjects->push_back(particle5);
-		GameObjects->push_back(particle6);
-		GameObjects->push_back(particle7);
-		GameObjects->push_back(particle8);*/
+		GameObject* particle = new Particle{ pos + ofRandom(-radius/3, radius/3), getMovementVector() * -1, 4, ofColor(255), 255 };
+		GameObjects->push_back(particle);
 	}
 }
 
+ofVec3f Player::drawVelPath()
+{
+	ofVec2f vec = pos - ofVec2f(ofGetMouseX() - ofGetWidth() / 2, ofGetMouseY() - ofGetHeight() / 2);
+	return ofVec3f(vec.x * ofGetWidth(), vec.y * ofGetHeight(), 0);
+}
+
 // ----- EVENT FUNCTIONS ----- //
+
+void Player::mousePressed(int _x, int _y, int _button)
+{
+	mouse_down = true;
+	mouse_button = _button;
+	mouse_pos = { (float)_x, (float)_y };
+}
+
+void Player::mouseReleased()
+{
+	mouse_down = false;
+}
 
 void Player::keyPressed(int key)
 {
@@ -173,10 +191,12 @@ void Player::keyPressed(int key)
 			accel.set(0);
 			ofResetElapsedTimeCounter();
 			previousMousePos = mouse_pos;*/
-			accel += pos - ofVec2f(ofGetMouseX()-ofGetWidth()/2, ofGetMouseY()-ofGetHeight()/2);
-			vel += (accel*10).limit(10);
-			pos = getInterpolatedPosition();
+			aiming = true;
 		}
+	}
+	if (key == 103)
+	{
+		GameController->invertGravity();
 	}
 }
 
@@ -185,6 +205,11 @@ void Player::keyReleased(int key)
 	if (key == 32)
 	{
 		readyToTeleport = true;
+		aiming = false;
+
+		accel += pos - ofVec2f(ofGetMouseX() - ofGetWidth() / 2, ofGetMouseY() - ofGetHeight() / 2);
+		vel += (accel * 10).limit(10);
+		pos = getInterpolatedPosition();
 	}
 }
 
@@ -192,9 +217,29 @@ void Player::keyReleased(int key)
 
 void Player::draw()
 {
+	if (aiming) {
+		ofPushMatrix();
+
+		glEnable(GL_LINE_STIPPLE);
+		glLineStipple(8, 0xAAAA);
+		glBegin(GL_LINES);
+		glVertex3f(pos.x, pos.y, 0);		
+		glVertex3f(drawVelPath().x, drawVelPath().y, drawVelPath().z);
+		glEnd();
+		glDisable(GL_LINE_STIPPLE);
+		glFlush();
+
+		//ofSetLineWidth(0.5);
+		//ofSetColor(125);
+		//ofLine(ofVec3f(pos.x, pos.y, 0), drawVelPath());
+		
+		ofPopMatrix();
+	}
+
 	drawParticleTrail();
 
 	ofSetColor(color);
 	float mult = (ofMap(vel.length(), 0, 15, 1, 0.25));
 	ofEllipse(pos.x, pos.y, radius * mult, radius * mult);
+	//ofLine(ofVec3f(pos.x, pos.y, 0), ofVec3f(vel.x*ofGetWidth(), vel.y*ofGetHeight(), 0));
 }

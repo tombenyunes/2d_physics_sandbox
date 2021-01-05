@@ -3,10 +3,8 @@
 #include "ofMain.h"
 #include "GameObject.h"
 #include "Particle.h"
-
-#define MAXIMUM_ACCELERATION 0.15
-#define MAXIMUM_VELOCITY 15
-#define FRICTION 0.015
+#include "Controller.h"
+#include "guiController.h"
 
 class Player : public GameObject {
 
@@ -17,14 +15,18 @@ public:
 
 	ofVec2f getTeleportVector();
 	void teleportPlayer();
-	void applyFriction();
+	ofVec2f applyFriction();
 	ofVec2f getMovementVector();
 	ofVec2f getAcceleration();
 	ofVec2f getInterpolatedPosition();
 	void updateMovementForces();
+	void updateGUI();
 
 	void drawParticleTrail();
+	ofVec3f drawVelPath();
 
+	void mousePressed(int _x, int _y, int _button);
+	void mouseReleased();
 	void keyPressed(int key);
 	void keyReleased(int key);
 
@@ -34,9 +36,16 @@ public:
 
 private:
 
+	// Events
+	bool mouse_down;
+	int mouse_button;
+	ofVec2f mouse_pos;
+
+	// Teleporting
 	bool readyToTeleport;
 	ofVec2f teleportTarget;
 	bool isTeleporting;
 	ofVec2f previousMousePos;
+	bool aiming = false;
 
 };

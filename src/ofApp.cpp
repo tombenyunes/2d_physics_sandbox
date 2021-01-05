@@ -4,6 +4,9 @@
 void ofApp::setup(){
 	GameObject* player = new Player;
 	GameObjects->push_back(player);
+	
+	GameController = new Controller;
+	gui_Controller = new guiController;
 }
 
 //--------------------------------------------------------------
@@ -16,18 +19,26 @@ void ofApp::update(){
 	}
 
 	for (int i = 0; i < GameObjects->size(); i++) {
-		(*GameObjects)[i]->root_update(GameObjects);
+		(*GameObjects)[i]->root_update(GameObjects, GameController, gui_Controller);
 	}
+
+	//gui_Controller->update();
+	//gui_Controller->acceleration++;
 }
 
 //--------------------------------------------------------------
 void ofApp::draw(){
 	ofBackground(/*30*/0);
+
+	ofPushMatrix();
 	ofTranslate(ofGetWidth() / 2, ofGetHeight() / 2);
 
 	for (int i = 0; i < GameObjects->size(); i++) {
 		(*GameObjects)[i]->root_draw();
 	}
+	ofPopMatrix();
+
+	gui_Controller->gui.draw();
 }
 
 //--------------------------------------------------------------

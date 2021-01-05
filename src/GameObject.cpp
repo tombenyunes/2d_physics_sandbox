@@ -11,14 +11,13 @@ GameObject::GameObject(ofVec2f _pos, ofColor _color)
 	
 	needs_to_be_deleted = false;
 
-	mouse_down = false;
-	mouse_button = -1;
-
 	screenWrap_enabled = false;
 	screenBounce_enabled = false;
+	gravity_enabled = false;
 }
 
-void GameObject::screenWrap() {
+void GameObject::screenWrap()
+{
 	if (pos.x > 0 + (ofGetWidth() / 2)) {
 		pos.x = 0 - (ofGetWidth() / 2);
 	}
@@ -33,7 +32,8 @@ void GameObject::screenWrap() {
 	}
 }
 
-void GameObject::screenBounce() {
+void GameObject::screenBounce()
+{
 	if (pos.x > 0 + (ofGetWidth() / 2)) {
 		vel.x *= -1;
 	}
@@ -48,6 +48,16 @@ void GameObject::screenBounce() {
 	}
 }
 
+void GameObject::gravity()
+{
+	if (GameController->GRAVITY == 1) {
+		vel += ofVec2f(0, GRAVITY_FORCE);
+		vel.limit(MAXIMUM_VELOCITY);
+
+		accel.set(0);
+	}
+}
+
 void GameObject::AddModule(string _id)
 {
 	if (_id == "screenWrap") {
@@ -58,21 +68,31 @@ void GameObject::AddModule(string _id)
 		//cout << "screenBounce module added" << endl;
 		screenBounce_enabled = true;
 	}
+	else if (_id == "gravity") {
+		//cout << "gravity module added" << endl;
+		gravity_enabled = true;
+	}
 	else {
 		cout << "Error: Module ID is invalid" << endl;
 	}
 }
 
-void GameObject::root_update(vector<GameObject*>* _gameobjects)
+void GameObject::root_update(vector<GameObject*>* _gameobjects, Controller* _controller, guiController* _guiController)
 {
 	if (!needs_to_be_deleted) {
+
 		GameObjects = _gameobjects;
+		GameController = _controller;
+		gui_Controller = _guiController;
 
 		if (screenWrap_enabled) {
 			screenWrap();
 		}
 		if (screenBounce_enabled) {
 			screenBounce();
+		}
+		if (gravity_enabled) {
+			gravity();
 		}
 
 		update();
@@ -96,24 +116,18 @@ void GameObject::update()
 
 void GameObject::mousePressed(int _x, int _y, int _button)
 {
-	mouse_down = true;
-	mouse_button = _button;
-	mouse_pos = { (float)_x, (float)_y };
 }
 
 void GameObject::mouseReleased()
 {
-	mouse_down = false;
 }
 
 void GameObject::keyPressed(int key)
 {
-	
 }
 
 void GameObject::keyReleased(int key)
 {
-
 }
 
 // ----- RENDER LOOP ----- //

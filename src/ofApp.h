@@ -2,7 +2,11 @@
 
 #include "ofMain.h"
 #include "GameObject.h"
+#include "Controller.h"
 #include "Player.h"
+
+#include "ofxGui.h"
+#include "guiController.h"
 
 class ofApp : public ofBaseApp{
 
@@ -25,4 +29,8 @@ class ofApp : public ofBaseApp{
 		
 		vector <GameObject*> vec;
 		vector <GameObject*>* GameObjects = &vec;
+
+		Controller* GameController;
+		guiController* gui_Controller;
+
 };

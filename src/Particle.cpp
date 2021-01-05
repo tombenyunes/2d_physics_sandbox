@@ -11,6 +11,7 @@ Particle::Particle(ofVec2f _pos, ofVec2f _vel, float _radius, ofColor _color, in
 	lifetime = _lifetime;
 
 	AddModule("screenBounce");
+	AddModule("gravity");
 }
 
 void Particle::update()
