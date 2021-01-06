@@ -8,11 +8,12 @@ void ofApp::setup(){
 	GameObject* spring = new Spring(ofVec2f(0, 0), 0.8, 0.2, 0.92, 150);
 	//GameObjects->push_back(spring);
 	for (int i = 0; i < 10; i++) {
-		GameObject* object = new Object(5, 17.5);
-		GameObjects->push_back(object);
+		GameObject* object = new Object(ofRandom(1, 50), ofRandom(10, 300));
+		//GameObjects->push_back(object);
 	}
-	GameObject* object2 = new Object(100, 125);
-	GameObjects->push_back(object2);
+	
+	GameObject* springs = new Springs(ofRandom(1, 50), ofRandom(10, 300), 2, 4, 22, ofVec2f(200, 53));
+	GameObjects->push_back(springs);
 	
 	GameController = new Controller;
 	gui_Controller = new guiController;
@@ -32,11 +33,14 @@ void ofApp::update(){
 	for (int i = 0; i < GameObjects->size(); i++) {
 		(*GameObjects)[i]->root_update(GameObjects, GameController, gui_Controller, CollisionDetector);
 	}
+
+	gui_Controller->update(GameController);
 }
 
 //--------------------------------------------------------------
 void ofApp::draw(){
 	ofBackground(/*30*/0);
+	ofSetCircleResolution(176);
 
 	ofPushMatrix();
 	ofTranslate(ofGetWidth() / 2, ofGetHeight() / 2);
@@ -47,9 +51,10 @@ void ofApp::draw(){
 	ofPopMatrix();
 
 	if (draw_gui) {
-		gui_Controller->gui.draw();
-		if (GameController->OBJECT_SELECTED) {
-			gui_Controller->gui2.draw();
+		gui_Controller->world_gui.draw();
+		gui_Controller->player_gui.draw();
+		if (GameController->activeObject != nullptr) {
+			gui_Controller->selected_gui.draw();
 		}
 	}
 }
@@ -58,9 +63,6 @@ void ofApp::draw(){
 void ofApp::keyPressed(int key){
 	for (int i = 0; i < GameObjects->size(); i++) {
 		(*GameObjects)[i]->keyPressed(key);
-	}
-	if (key == 102) {
-		(draw_gui) ? draw_gui = false : draw_gui = true;
 	}
 }
 
@@ -109,7 +111,7 @@ void ofApp::mouseExited(int x, int y){
 
 //--------------------------------------------------------------
 void ofApp::windowResized(int w, int h){
-
+	gui_Controller->windowResized(w, h);
 }
 
 //--------------------------------------------------------------

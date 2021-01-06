@@ -1,10 +1,14 @@
 #pragma once
 
+#ifndef PLAYER_H
+
 #include "ofMain.h"
 #include "GameObject.h"
 #include "Particle.h"
 #include "Controller.h"
 #include "guiController.h"
+
+#define PLAYER_H
 
 class Player : public GameObject {
 
@@ -49,3 +53,5 @@ private:
 	bool aiming = false;
 
 };
+
+#endif

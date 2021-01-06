@@ -1,15 +1,20 @@
 #pragma once
 
+#ifndef OFAPP_H
+
 #include "ofMain.h"
 #include "GameObject.h"
 #include "Controller.h"
 #include "Player.h"
 #include "Spring.h"
 #include "Object.h"
+#include "Springs.h"
 
 #include "ofxGui.h"
 #include "guiController.h"
 #include "Collisions.h"
+
+#define OFAPP_H
 
 class ofApp : public ofBaseApp{
 
@@ -41,3 +46,5 @@ class ofApp : public ofBaseApp{
 		bool draw_gui = true;
 
 };
+
+#endif

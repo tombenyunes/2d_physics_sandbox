@@ -1,7 +1,11 @@
 #pragma once
 
+#ifndef SPRING_H
+
 #include "ofMain.h"
 #include "GameObject.h"
+
+#define SPRING_H
 
 class Spring : public GameObject {
 
@@ -35,3 +39,5 @@ private:
 	float f;
 
 };
+
+#endif

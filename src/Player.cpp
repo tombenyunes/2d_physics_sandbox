@@ -144,7 +144,17 @@ void Player::updateMovementForces()
 
 void Player::updateGUI()
 {
-	gui_Controller->updateValues(pos, vel, accel);
+	static bool initiai_values_triggered = false;
+	if (!initiai_values_triggered) {
+		initiai_values_triggered = true;
+		gui_Controller->updateValues(pos, vel, accel, mass, radius, 1);
+	}
+	else {
+		gui_Controller->updateValues(pos, vel, accel, gui_Controller->mass, gui_Controller->radius, 1);
+		mass = gui_Controller->mass;
+		radius = gui_Controller->radius;
+	}
+	//mass = gui_Controller->mass;
 }
 
 void Player::drawParticleTrail()
@@ -196,10 +206,6 @@ void Player::keyPressed(int key)
 			aiming = true;
 		}
 	}
-	if (key == 103)
-	{
-		GameController->invertGravity();
-	}
 }
 
 void Player::keyReleased(int key)
@@ -243,6 +249,7 @@ void Player::draw()
 	drawParticleTrail();
 
 	ofSetColor(color);
+	ofFill();
 	float mult = (ofMap(vel.length(), 0, 15, 1, 0.25));
 	ofEllipse(pos.x, pos.y, radius * mult, radius * mult);
 	//ofLine(ofVec3f(pos.x, pos.y, 0), ofVec3f(vel.x*ofGetWidth(), vel.y*ofGetHeight(), 0));

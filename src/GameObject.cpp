@@ -39,17 +39,21 @@ void GameObject::screenWrap()
 
 void GameObject::screenBounce()
 {
-	if (pos.x > 0 + (ofGetWidth() / 2)) {
+	if (pos.x > 0 + (ofGetWidth() / 2) - (radius) / 2) {
 		vel.x *= -1;
+		pos.x = 0 + (ofGetWidth() / 2) - (radius) / 2;
 	}
-	if (pos.x < 0 - (ofGetWidth() / 2)) {
+	if (pos.x < 0 - (ofGetWidth() / 2) + (radius)/2) {
 		vel.x *= -1;
+		pos.x = 0 - (ofGetWidth() / 2) + (radius) / 2;
 	}
-	if (pos.y < 0 - (ofGetHeight() / 2)) {
+	if (pos.y < 0 - (ofGetHeight() / 2) + (radius) / 2) {
 		vel.y *= -1;
+		pos.y = 0 - (ofGetHeight() / 2) + (radius) / 2;
 	}
-	if (pos.y > 0 + (ofGetHeight() / 2)) {
+	if (pos.y > 0 + (ofGetHeight() / 2) - (radius) / 2) {
 		vel.y *= -1;
+		pos.y = 0 + (ofGetHeight() / 2) - (radius) / 2;
 	}
 }
 

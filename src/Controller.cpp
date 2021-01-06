@@ -4,14 +4,21 @@ Controller::Controller()
 {
 	GRAVITY = 0;
 	OBJECT_SELECTED = false;
+
+	activeObject = nullptr;
 }
 
-void Controller::invertGravity()
+void Controller::setGravity(bool _value)
 {
-	(GRAVITY == 0) ? GRAVITY = 1 : GRAVITY = 0;
+	(_value == 1) ? GRAVITY = 1 : GRAVITY = 0;
 }
 
-void Controller::makeActive()
+void Controller::makeActive(GameObject* _this)
 {
-	
+	activeObject = _this;
+}
+
+GameObject* Controller::getActive()
+{
+	return activeObject;
 }

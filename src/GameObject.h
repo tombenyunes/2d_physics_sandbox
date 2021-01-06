@@ -1,9 +1,13 @@
 #pragma once
 
+#ifndef GAMEOBJECT_H
+#define GAMEOBJECT_H
+
 #include "ofMain.h"
 #include "Controller.h"
 #include "guiController.h"
 #include "Collisions.h"
+
 
 #define MAXIMUM_ACCELERATION 0.15
 #define MAXIMUM_VELOCITY 15
@@ -20,8 +24,10 @@ public:
 
 	void root_update(vector<GameObject*>* _gameobjects, Controller* _controller, guiController* _guiController, Collisions* _collisionDetector);
 	virtual void update();
+	virtual void ellipseCollider();
 
 	virtual void isColliding(GameObject* _other);
+	bool ellipseCollider_enabled;
 
 	// Event functions
 	virtual void mousePressed(int _x, int _y, int _button);
@@ -42,21 +48,24 @@ public:
 	bool mouseOver;
 	bool active;
 
-protected:
-	
-	// Base
 	ofVec2f pos;
+	float radius;
+
+protected:
+
+	// Base
+	//ofVec2f pos;
 	ofVec2f vel;
 	ofVec2f accel;
 	ofColor color;		
-	float radius;
+	//float radius;
 	float mass;
 
 	// Modules
 	bool screenWrap_enabled;
 	bool screenBounce_enabled;
 	bool gravity_enabled;
-	bool ellipseCollider_enabled;
+	
 	bool mouseHover_enabled;
 
 private:
@@ -65,7 +74,9 @@ private:
 	void screenWrap();
 	void screenBounce();
 	void gravity();
-	void ellipseCollider();
+	/*void ellipseCollider();*/
 	void mouseHover();
 
 };
+
+#endif
