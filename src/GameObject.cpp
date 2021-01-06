@@ -19,6 +19,8 @@ GameObject::GameObject(ofVec2f _pos, ofColor _color)
 	gravity_enabled = false;
 	ellipseCollider_enabled = false;
 	mouseHover_enabled = false;
+
+	node = -1;
 }
 
 void GameObject::screenWrap()

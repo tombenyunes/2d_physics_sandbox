@@ -23,6 +23,12 @@ public:
 
 	bool GRAVITY;
 	bool OBJECT_SELECTED;
+	
+	ofVec2f anchorPos;
+	ofVec2f nodePos1;
+	ofVec2f nodeVel1;
+	ofVec2f nodePos2;
+	ofVec2f nodeVel2;
 
 
 };

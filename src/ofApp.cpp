@@ -8,13 +8,18 @@ void ofApp::setup(){
 	GameObject* spring = new Spring(ofVec2f(0, 0), 0.8, 0.2, 0.92, 150);
 	//GameObjects->push_back(spring);
 	for (int i = 0; i < 10; i++) {
-		GameObject* object = new Object(ofRandom(1, 50), ofRandom(10, 300));
+		//GameObject* object = new Object(ofRandom(1, 50), ofRandom(10, 300));
 		//GameObjects->push_back(object);
 	}
 	
-	GameObject* springs = new Springs(ofRandom(1, 50), ofRandom(10, 300), 2, 4, 22, ofVec2f(200, 53));
-	GameObjects->push_back(springs);
-	
+	GameObject* springs = new Springs(ofRandom(1, 50), ofRandom(10, 300), 3, 1, 30, ofVec2f(200, 53));
+	//GameObjects->push_back(springs);
+
+	GameObject* node1 = new Object(ofVec2f(200+25, 53+36), 30, 30, 1);
+	GameObjects->push_back(node1);
+	GameObject* node2 = new Object(ofVec2f(200-103, 53+32), 30, 30, 2);
+	GameObjects->push_back(node2);
+
 	GameController = new Controller;
 	gui_Controller = new guiController;
 

@@ -50,6 +50,7 @@ public:
 
 	ofVec2f pos;
 	float radius;
+	int node;
 
 protected:
 
