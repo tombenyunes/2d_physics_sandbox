@@ -74,15 +74,10 @@ void Object::mousePressed(int _x, int _y, int _button)
 	if (!mouse_down_triggered) {
 		mouse_down_triggered = true;
 		if (_button == 2 && mouseOver) {
-
-			if (GameController->activeObject == this) {
-				GameController->makeActive(nullptr);
-			}
-			else {
+			if (GameController->activeObject != this) {
 				initiai_values_triggered = false;
 				GameController->makeActive(this);
 			}
-
 		}
 	}
 }

@@ -12,8 +12,10 @@ void ofApp::setup(){
 		GameObjects->push_back(object);
 	}
 	
-	GameObject* springs = new Springs(ofVec2f(200, 53), 6, 2, 4, 22);
-	GameObjects->push_back(springs);
+	GameObject* spring1 = new Springs(ofVec2f(-100, 0), 35, 22, 35, 22, 2, 2, 22);
+	GameObject* spring2 = new Springs(ofVec2f(100, 0), 35, 22, 35, 22, 2, 2, 22);
+	GameObjects->push_back(spring1);
+	GameObjects->push_back(spring2);
 	
 	GameController = new Controller;
 	gui_Controller = new guiController;
