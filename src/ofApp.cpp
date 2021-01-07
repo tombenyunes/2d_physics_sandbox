@@ -13,12 +13,12 @@ void ofApp::setup(){
 	}
 	
 	GameObject* springs = new Springs(ofRandom(1, 50), ofRandom(10, 300), 3, 1, 30, ofVec2f(200, 53));
-	//GameObjects->push_back(springs);
+	GameObjects->push_back(springs);
 
 	GameObject* node1 = new Object(ofVec2f(200+25, 53+36), 30, 30, 1);
-	GameObjects->push_back(node1);
+	//GameObjects->push_back(node1);
 	GameObject* node2 = new Object(ofVec2f(200-103, 53+32), 30, 30, 2);
-	GameObjects->push_back(node2);
+	//GameObjects->push_back(node2);
 
 	GameController = new Controller;
 	gui_Controller = new guiController;

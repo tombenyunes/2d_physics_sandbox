@@ -15,7 +15,6 @@ public:
 	Controller();
 
 	void setGravity(bool _value);
-	void invertGravity();
 	void makeActive(GameObject* _this);
 	GameObject* getActive();
 
