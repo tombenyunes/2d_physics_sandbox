@@ -14,6 +14,8 @@ GameObject::GameObject(ofVec2f _pos, ofColor _color)
 	mouseOver = false;
 	active = false;
 
+	isSpring = false;
+
 	screenWrap_enabled = false;
 	screenBounce_enabled = false;
 	gravity_enabled = false;
@@ -73,8 +75,10 @@ void GameObject::ellipseCollider()
 	for (int i = 0; i < GameObjects->size(); i++) {
 		if ((*GameObjects)[i]->ellipseCollider_enabled) {
 			if ((*GameObjects)[i] != this) {
-				if (CollisionDetector->EllipseCompare(pos, radius, (*GameObjects)[i]->pos, (*GameObjects)[i]->radius)) {
-					isColliding((*GameObjects)[i]);
+				if ((*GameObjects)[i]->isSpring == false) {
+					if (CollisionDetector->EllipseCompare(pos, radius, (*GameObjects)[i]->pos, (*GameObjects)[i]->radius)) {
+						isColliding((*GameObjects)[i]);
+					}
 				}
 			}
 		}

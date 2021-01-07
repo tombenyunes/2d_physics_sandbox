@@ -25,6 +25,7 @@ public:
 	void root_update(vector<GameObject*>* _gameobjects, Controller* _controller, guiController* _guiController, Collisions* _collisionDetector);
 	virtual void update();
 	virtual void ellipseCollider();
+	virtual void mouseHover();
 
 	virtual void isColliding(GameObject* _other);
 	bool ellipseCollider_enabled;
@@ -50,6 +51,7 @@ public:
 
 	ofVec2f pos;
 	float radius;
+	bool isSpring;
 
 protected:
 
@@ -75,7 +77,7 @@ private:
 	void screenBounce();
 	void gravity();
 	/*void ellipseCollider();*/
-	void mouseHover();
+	/*void mouseHover();*/
 
 };
 

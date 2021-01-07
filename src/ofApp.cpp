@@ -7,12 +7,12 @@ void ofApp::setup(){
 
 	GameObject* spring = new Spring(ofVec2f(0, 0), 0.8, 0.2, 0.92, 150);
 	//GameObjects->push_back(spring);
-	for (int i = 0; i < 10; i++) {
-		GameObject* object = new Object(ofRandom(1, 50), ofRandom(10, 300));
-		//GameObjects->push_back(object);
+	for (int i = 0; i < 2; i++) {
+		GameObject* object = new Object(ofVec2f(ofRandom(-ofGetWidth() / 2, ofGetWidth() / 2), ofRandom(-ofGetHeight() / 2, ofGetHeight() / 2)), ofRandom(1, 50), ofRandom(10, 300));
+		GameObjects->push_back(object);
 	}
 	
-	GameObject* springs = new Springs(ofRandom(1, 50), ofRandom(10, 300), 2, 4, 22, ofVec2f(200, 53));
+	GameObject* springs = new Springs(ofVec2f(200, 53), 6, 2, 4, 22);
 	GameObjects->push_back(springs);
 	
 	GameController = new Controller;
