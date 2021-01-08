@@ -12,25 +12,29 @@ class Object : public GameObject {
 public:
 
 	Object(ofVec2f _pos, float _mass, float _radius);
+	
+	void dragNodes();
 	void update() override;
 	void draw() override;
-
-	void applyForce(ofVec2f _force);
-	ofVec2f applyFriction();
-	ofVec2f getAcceleration();
-	void updateMovementForces();
+	
+	ofVec2f getFriction();
+	ofVec2f applyAllForces();
+	void addForces();
+	void updateForces();
 	void updateGUI();
+	void resetForces();
 
 	void mousePressed(int _x, int _y, int _button) override;
 	void mouseReleased(int _x, int _y, int _button) override;
 
 	ofVec2f friction;
 
-	bool mouse_down_triggered;
-	bool initiai_values_triggered;
-
 	ofVec2f anchorPos;
 	int node;
+
+	bool mouse_down_triggered;
+	bool initiai_values_triggered;
+	bool mouseDrag;
 
 	//CalculateSprings springs;
 };

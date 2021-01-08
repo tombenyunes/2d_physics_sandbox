@@ -9,9 +9,11 @@ GameObject::GameObject(ofVec2f _pos, ofColor _color)
 	accel.set(0);
 	radius = 35;
 	mass = 10;
-	
+	infiniteMass = false;
+
 	needs_to_be_deleted = false;
 	mouseOver = false;
+	mouseOffsetFromCenter.set(0);
 	active = false;
 
 	isSpring = false;
@@ -45,7 +47,7 @@ void GameObject::screenBounce()
 		vel.x *= -1;
 		pos.x = 0 + (ofGetWidth() / 2) - (radius) / 2;
 	}
-	if (pos.x < 0 - (ofGetWidth() / 2) + (radius)/2) {
+	if (pos.x < 0 - (ofGetWidth() / 2) + (radius) / 2) {
 		vel.x *= -1;
 		pos.x = 0 - (ofGetWidth() / 2) + (radius) / 2;
 	}
@@ -59,14 +61,18 @@ void GameObject::screenBounce()
 	}
 }
 
+void GameObject::applyForce(ofVec2f _force, bool _limitForce)
+{
+	accel += _force;
+	if (_limitForce) {
+		accel.limit(MAXIMUM_ACCELERATION);
+	}
+}
+
 void GameObject::gravity()
 {
 	if (GameController->GRAVITY == 1) {
 		vel += ofVec2f(0, GRAVITY_FORCE * mass);
-		vel.limit(MAXIMUM_VELOCITY);
-		
-		accel.set(0);
-		pos += vel;
 	}
 }
 
@@ -88,12 +94,16 @@ void GameObject::ellipseCollider()
 void GameObject::mouseHover()
 {
 	if (CollisionDetector->EllipseCompare(pos, radius, ofVec2f(ofGetMouseX()-ofGetWidth()/2, ofGetMouseY()-ofGetHeight()/2), 0)) {
-		color = ofColor(255, 0, 0);
-		mouseOver = true;
+		if (GameController->MOUSE_BEING_DRAGGED == false) {
+			color = ofColor(255, 165, 0);
+			mouseOver = true;
+			mouseOffsetFromCenter = pos - ofVec2f(ofGetMouseX() - ofGetWidth() / 2, ofGetMouseY() - ofGetHeight() / 2);
+		}
 	}
 	else {
 		color = ofColor(255);
 		mouseOver = false;
+		mouseOffsetFromCenter.set(0);
 	}
 }
 
@@ -180,10 +190,16 @@ void GameObject::keyPressed(int key)
 {
 }
 
-void GameObject::isColliding(GameObject* _other)
+void GameObject::isColliding(GameObject* _other, ofVec2f _nodePos)
 {
-	ofVec2f forceVec = pos - _other->pos;
-	accel += forceVec / mass;
+	if (!_other->isSpring) {
+		ofVec2f forceVec = pos - _other->pos;
+		accel += forceVec / mass;
+	}
+	else {
+		ofVec2f forceVec = pos - _nodePos;
+		accel += forceVec / mass;
+	}
 }
 
 void GameObject::keyReleased(int key)

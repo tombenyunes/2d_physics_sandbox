@@ -17,40 +17,36 @@ public:
 
 	void update() override;
 
-	ofVec2f getTeleportVector();
-	void teleportPlayer();
-	ofVec2f applyFriction();
+	ofVec2f getFriction();
 	ofVec2f getMovementVector();
-	ofVec2f getAcceleration();
 	ofVec2f getInterpolatedPosition();
-	void updateMovementForces();
-	void updateGUI();
 
-	void drawParticleTrail();
-	ofVec3f drawVelPath();
+	bool playerCanMove();
+
+	void addForces();
+	ofVec2f applyAllForces();
+	void updateForces();
+	void updateGUI();
+	void resetForces();
 
 	void mousePressed(int _x, int _y, int _button) override;
 	void mouseReleased(int _x, int _y, int _button) override;
 	void keyPressed(int key) override;
 	void keyReleased(int key) override;
 
-	void draw() override;
+	void boostPlayer();
 
-	ofVec2f friction;
+	void draw() override;
+	ofVec3f drawVelPath();
+	void drawParticleTrail();
 
 private:
-
-	// Events
+	
 	bool mouse_down;
 	int mouse_button;
 	ofVec2f mouse_pos;
-
-	// Teleporting
-	bool readyToTeleport;
-	ofVec2f teleportTarget;
-	bool isTeleporting;
-	ofVec2f previousMousePos;
-	bool aiming = false;
+	
+	bool aimingBoost;
 
 };
 

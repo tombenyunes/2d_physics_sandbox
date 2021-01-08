@@ -13,10 +13,9 @@ Player::Player(ofVec2f _pos, ofColor _color)
 	// Events
 	mouse_down = false;
 	mouse_button = -1;
+	
+	aimingBoost = false;
 
-	// Teleporting
-	readyToTeleport = true;
-	isTeleporting = false;
 
 	AddModule("screenBounce");
 	AddModule("gravity");
@@ -25,74 +24,40 @@ Player::Player(ofVec2f _pos, ofColor _color)
 
 void Player::update()
 {
-	//updateGUI();
-	if (isTeleporting) teleportPlayer();
-	updateMovementForces();
+	updateForces();
+	updateGUI();
+	resetForces();
 }
 
-ofVec2f Player::getTeleportVector()
+void Player::updateForces()
 {
-	int movementDirection;
-	if (vel.x > 0 && vel.y < 0) {
-		//cout << "right up" << endl;
-		movementDirection = 0;
-	}
-	else if (vel.x > 0 && vel.y > 0) {
-		//cout << "right down" << endl;
-		movementDirection = 1;
-	}
-	else if (vel.x < 0 && vel.y > 0) {
-		//cout << "left down" << endl;
-		movementDirection = 2;
-	}
-	else if (vel.x < 0 && vel.y < 0) {
-		//cout << "left up" << endl;
-		movementDirection = 3;
-	}
-	cout << vel << endl;
-	//return ((vel-pos) * 2 * -1);
-	return vel.scale(2);
-	//return { (float)ofGetMouseX() - ofGetWidth() / 2, (float)ofGetMouseY() - ofGetHeight() / 2 };
+	applyAllForces();
+	addForces();
 }
 
-void Player::teleportPlayer()
+ofVec2f Player::applyAllForces()
 {
-	if (abs(pos.x - teleportTarget.x) < 1 || abs(pos.y - teleportTarget.y) < 1) {
-		isTeleporting = false;
-		//ofVec2f movementVec = pos - previousMousePos;
-		//movementVec.scale(5);
-		//accel += getMovementVector();
+	applyForce(getFriction());
+	if (playerCanMove()) applyForce(getMovementVector());
+	return accel;
+}
+
+ofVec2f Player::getFriction()
+{
+	ofVec2f friction = vel * -1;
+	friction *= FRICTION_FORCE;
+
+	return friction;
+}
+
+bool Player::playerCanMove()
+{
+	if (mouse_down && mouse_button == 0) {
+		return true;
 	}
 	else {
-		//float progress = (float)(ofGetFrameNum() % 100) / 100;
-		float progress = (float)(((int)(ofGetElapsedTimef() * 60)) % 100) / 100;
-
-		ofVec2f powInterpIn;
-		powInterpIn.x = ofNextPow2(progress);
-		powInterpIn.y = ofNextPow2(progress);
-
-		float sinInterp = sin(progress * (PI / 2));
-
-		ofVec2f newPos;
-		//newPos.x = ofLerp(pos.x, teleportTarget.x, powInterpIn.x/5);
-		//newPos.y = ofLerp(pos.y, teleportTarget.y, powInterpIn.y/5);
-		//newPos.x = ofLerp(pos.x, teleportTarget.x, sinInterp*2);
-		//newPos.y = ofLerp(pos.y, teleportTarget.y, sinInterp*2);
-		newPos.x = ofLerp(pos.x, teleportTarget.x, 0.1);
-		newPos.y = ofLerp(pos.y, teleportTarget.y, 0.1);
-		pos = newPos;
+		return false;
 	}
-}
-
-ofVec2f Player::applyFriction()
-{
-	//if (!mouse_down) {
-		friction = vel * -1;
-		//friction.normalize(); // normalizing breaks ui
-		friction *= FRICTION;
-	//}
-	
-	return accel += friction;
 }
 
 ofVec2f Player::getMovementVector()
@@ -102,13 +67,11 @@ ofVec2f Player::getMovementVector()
 	return movementVec;
 }
 
-ofVec2f Player::getAcceleration()
+void Player::addForces()
 {
-	accel = applyFriction();
-	if (mouse_down && mouse_button == 0) {
-		accel += getMovementVector();
-	}
-	return accel.limit(MAXIMUM_ACCELERATION);
+	vel += accel;
+	vel.limit(MAXIMUM_VELOCITY);
+	pos = getInterpolatedPosition();
 }
 
 ofVec2f Player::getInterpolatedPosition()
@@ -131,47 +94,34 @@ ofVec2f Player::getInterpolatedPosition()
 	return newPos;
 }
 
-void Player::updateMovementForces()
-{
-	vel += getAcceleration();
-	vel.limit(MAXIMUM_VELOCITY);
-	pos = getInterpolatedPosition();
-	
-	updateGUI();
-
-	accel.set(0);
-}
-
 void Player::updateGUI()
 {
 	static bool initiai_values_triggered = false;
 	if (!initiai_values_triggered) {
 		initiai_values_triggered = true;
-		gui_Controller->updateValues(pos, vel, accel, mass, radius, 1);
+		gui_Controller->updateValues(pos, vel, accel, mass, infiniteMass, radius, 1);
 	}
 	else {
-		gui_Controller->updateValues(pos, vel, accel, gui_Controller->mass, gui_Controller->radius, 1);
-		mass = gui_Controller->mass;
+		gui_Controller->updateValues(pos, vel, accel, gui_Controller->mass, gui_Controller->infiniteMass, gui_Controller->radius, 1);
+		if (infiniteMass) {
+			mass = 999999999999;
+		}
+		else {
+			mass = gui_Controller->mass;
+		}
 		radius = gui_Controller->radius;
-	}
-	//mass = gui_Controller->mass;
-}
-
-void Player::drawParticleTrail()
-{
-	if (mouse_down && mouse_button == 0) {
-		GameObject* particle = new Particle{ pos /*+ ofRandom(-radius/3, radius/3)*/, getMovementVector() * -1, 4, ofColor(255), 255 };
-		GameObjects->push_back(particle);
+		infiniteMass = gui_Controller->infiniteMass;
 	}
 }
 
-ofVec3f Player::drawVelPath()
+void Player::resetForces()
 {
-	ofVec2f vec = pos - ofVec2f(ofGetMouseX() - ofGetWidth() / 2, ofGetMouseY() - ofGetHeight() / 2);
-	return ofVec3f(vec.x * ofGetWidth(), vec.y * ofGetHeight(), 0);
+	accel.set(0);
 }
+
 
 // ----- EVENT FUNCTIONS ----- //
+
 
 void Player::mousePressed(int _x, int _y, int _button)
 {
@@ -195,16 +145,7 @@ void Player::keyPressed(int key)
 	}
 	if (key == 32)
 	{
-		if (readyToTeleport == true) {
-			/*readyToTeleport = false;
-			isTeleporting = true;
-			teleportTarget = getTeleportVector();
-			vel.set(0);
-			accel.set(0);
-			ofResetElapsedTimeCounter();
-			previousMousePos = mouse_pos;*/
-			aiming = true;
-		}
+		aimingBoost = true;
 	}
 }
 
@@ -212,22 +153,27 @@ void Player::keyReleased(int key)
 {
 	if (key == 32)
 	{
-		readyToTeleport = true;
-		aiming = false;
+		boostPlayer();
+	}
+}
 
-		accel += pos - ofVec2f(ofGetMouseX() - ofGetWidth() / 2, ofGetMouseY() - ofGetHeight() / 2);
-		vel += (accel * 10).limit(10);
-		pos = getInterpolatedPosition();
+void Player::boostPlayer()
+{
+	aimingBoost = false;
+	if (vel.length() < 15) {
+		applyForce((pos - ofVec2f(ofGetMouseX() - ofGetWidth() / 2, ofGetMouseY() - ofGetHeight() / 2) * 10).limit(10), false);
+		addForces();
 	}
 }
 
 // ----- RENDER LOOP ----- //
 
+
 void Player::draw()
 {
 	ofSetColor(255);
 
-	if (aiming) {
+	if (aimingBoost) {
 		ofPushMatrix();
 
 		glEnable(GL_LINE_STIPPLE);
@@ -253,4 +199,18 @@ void Player::draw()
 	float mult = (ofMap(vel.length(), 0, 15, 1, 0.25));
 	ofEllipse(pos.x, pos.y, radius * mult, radius * mult);
 	//ofLine(ofVec3f(pos.x, pos.y, 0), ofVec3f(vel.x*ofGetWidth(), vel.y*ofGetHeight(), 0));
+}
+
+ofVec3f Player::drawVelPath()
+{
+	ofVec2f vec = pos - ofVec2f(ofGetMouseX() - ofGetWidth() / 2, ofGetMouseY() - ofGetHeight() / 2);
+	return ofVec3f(vec.x * ofGetWidth(), vec.y * ofGetHeight(), 0);
+}
+
+void Player::drawParticleTrail()
+{
+	if (mouse_down && mouse_button == 0) {
+		GameObject* particle = new Particle{ pos /*+ ofRandom(-radius/3, radius/3)*/, getMovementVector() * -1, 4, ofColor(255), 255 };
+		GameObjects->push_back(particle);
+	}
 }

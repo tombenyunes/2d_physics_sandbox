@@ -18,6 +18,7 @@ public:
 	void mouseHover() override;
 	void isColliding(GameObject* _other, int _node);
 
+	void gravity() override;
 	void dragNodes();
 	void getNodeColor(int _node);
 
@@ -35,7 +36,7 @@ public:
 
 	ofVec2f friction;
 
-	float gravity;
+	float gravityForce;
 	float timeStep;
 	float g_k;
 	float g_damping;
@@ -48,12 +49,14 @@ public:
 	ofVec2f nodeAccel1;
 	float nodeRadius1;
 	float nodeMass1;
+	float nodeGravityForce1;
 
 	ofVec2f nodePos2;
 	ofVec2f nodeVel2;
 	ofVec2f nodeAccel2;
 	float nodeRadius2;
 	float nodeMass2;
+	float nodeGravityForce2;
 
 	bool mouse_down_triggered;
 	bool initiai_values_triggered;

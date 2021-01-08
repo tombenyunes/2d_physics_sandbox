@@ -10,6 +10,7 @@ Object::Object(ofVec2f _pos, float _mass, float _radius)
 
 	mouse_down_triggered = false;
 	initiai_values_triggered = false;
+	mouseDrag = false;
 
 	AddModule("screenBounce");
 	AddModule("gravity");
@@ -17,56 +18,71 @@ Object::Object(ofVec2f _pos, float _mass, float _radius)
 	AddModule("mouseHover");
 }
 
+void Object::dragNodes()
+{
+	if (mouseDrag) {		
+		pos.set(ofVec2f(ofGetMouseX() - ofGetWidth() / 2, ofGetMouseY() - ofGetHeight() / 2) + mouseOffsetFromCenter);
+		vel.set(0);
+	}
+}
+
 void Object::update()
 {
-	updateMovementForces();
+	updateForces();
+	updateGUI();
+	dragNodes();
+	resetForces();
 }
 
-void Object::applyForce(ofVec2f _force)
-{
-	accel += _force;
-}
-
-ofVec2f Object::applyFriction()
+ofVec2f Object::getFriction()
 {
 	friction = vel * -1;
-	friction *= FRICTION;
+	friction *= FRICTION_FORCE;
 	return friction;
 }
 
-ofVec2f Object::getAcceleration()
+ofVec2f Object::applyAllForces()
 {
-	// Adds friction to acceleration
-	applyForce(applyFriction());
-
-	return accel.limit(MAXIMUM_ACCELERATION);
+	applyForce(getFriction());
+	return accel;
 }
 
-void Object::updateMovementForces()
+void Object::addForces()
 {
-	vel += getAcceleration();
-	vel.limit(MAXIMUM_VELOCITY);
-	pos += vel;
-	
-	if (GameController->activeObject == this) {
-		updateGUI();
-	}
+	vel += accel.limit(MAXIMUM_ACCELERATION);
+	pos += vel.limit(MAXIMUM_VELOCITY);
+}
 
-	accel.set(0);
+void Object::updateForces()
+{
+	applyAllForces();
+	addForces();
 }
 
 void Object::updateGUI()
 {
-	if (!initiai_values_triggered) {
-		initiai_values_triggered = true;
-		gui_Controller->updateValues(pos, vel, accel, mass, radius, 2);
+	if (GameController->activeObject == this) {
+		if (!initiai_values_triggered) {
+			initiai_values_triggered = true;
+			gui_Controller->updateValues(pos, vel, accel, mass, infiniteMass, radius, 2);
+		}
+		else {
+			gui_Controller->updateValues(pos, vel, accel, gui_Controller->mass2, gui_Controller->infiniteMass2, gui_Controller->radius2, 2);
+			if (infiniteMass) {
+				mass = 999999999999;
+			}
+			else {
+				mass = gui_Controller->mass2;
+			}
+			radius = gui_Controller->radius2;
+			infiniteMass = gui_Controller->infiniteMass2;
+		}
 	}
-	else {
-		gui_Controller->updateValues(pos, vel, accel, gui_Controller->mass2, gui_Controller->radius2, 2);
-		mass = gui_Controller->mass2;
-		radius = gui_Controller->radius2;
-	}
-	//mass = gui_Controller->mass;
+}
+
+void Object::resetForces()
+{
+	accel.set(0);
 }
 
 void Object::mousePressed(int _x, int _y, int _button)
@@ -80,12 +96,24 @@ void Object::mousePressed(int _x, int _y, int _button)
 			}
 		}
 	}
+	if (_button == 2) {
+		if (mouseOver && GameController->MOUSE_BEING_DRAGGED == false) {
+			mouseDrag = true;
+			GameController->MOUSE_BEING_DRAGGED = true;
+		}
+	}
 }
 
 void Object::mouseReleased(int _x, int _y, int _button)
 {
-	if (_button == 2 && mouse_down_triggered) {
-		mouse_down_triggered = false;
+	if (_button == 2) {
+		if (mouse_down_triggered) {
+			mouse_down_triggered = false;
+		}
+		if (mouseDrag) {
+			mouseDrag = false;
+			GameController->MOUSE_BEING_DRAGGED = false;
+		}
 	}
 }
 
@@ -94,13 +122,13 @@ void Object::draw()
 	ofPushStyle();
 
 	if (GameController->activeObject == this) {
-		ofSetColor(255, 0, 0);
+		ofSetColor(255, 165, 0);
 	}
 	else {
 		ofSetColor(color);
 	}
 	ofNoFill();
-	ofSetLineWidth(ofMap(mass, 1, 100000, 0.1, 10));
+	ofSetLineWidth(ofMap(mass, 1, 10000, 0.1, 10));
 
 	ofEllipse(pos.x, pos.y, radius, radius);
 

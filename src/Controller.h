@@ -22,6 +22,7 @@ public:
 
 	bool GRAVITY;
 	bool OBJECT_SELECTED;
+	bool MOUSE_BEING_DRAGGED;
 
 
 };

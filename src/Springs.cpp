@@ -16,7 +16,8 @@ Springs::Springs(ofVec2f _anchorPos, float _nodeRadius1, float _nodeMass1, float
 
 	isSpring = true;
 
-	gravity = 7;
+	//gravityForce = 0;
+
 	timeStep = 0.28;
 
 	k = _k;
@@ -31,16 +32,19 @@ Springs::Springs(ofVec2f _anchorPos, float _nodeRadius1, float _nodeMass1, float
 	nodeAccel1.set(0);
 	nodeRadius1 = _nodeRadius1;
 	nodeMass1 = _nodeMass1;
+	nodeGravityForce1 = 0;
 
 	nodePos2.set(pos);
 	nodeVel2.set(0);
 	nodeAccel2.set(0);
 	nodeRadius2 = _nodeRadius2;
 	nodeMass2 = _nodeMass2;
+	nodeGravityForce2 = 0;
 
 	AddModule("screenBounce");
 	AddModule("ellipseCollider");
 	AddModule("mouseHover");
+	AddModule("gravity");
 }
 
 ofVec2f Springs::updateSprings(int _node) {
@@ -71,14 +75,14 @@ ofVec2f Springs::updateSprings(int _node) {
 	mass1Force.x = mass1SpringForce.x -
 		mass1DampingForce.x - mass2SpringForce.x + mass2DampingForce.x;
 	mass1Force.y = mass1SpringForce.y +
-		springmass * gravity - mass1DampingForce.y - mass2SpringForce.y +
+		springmass * nodeGravityForce1 - mass1DampingForce.y - mass2SpringForce.y +
 		mass2DampingForce.y;
 
 	// Mass 2 Net Force
 	ofVec2f mass2Force;
 	mass2Force.x = mass2SpringForce.x - mass2DampingForce.x;
 	mass2Force.y = mass2SpringForce.y + springmass *
-		gravity - mass2DampingForce.y;
+		nodeGravityForce2 - mass2DampingForce.y;
 
 	if (_node == 1) {
 		return mass1Force / springmass;
@@ -95,9 +99,11 @@ void Springs::ellipseCollider()
 			if ((*GameObjects)[i] != this) {
 				if (CollisionDetector->EllipseCompare(nodePos1, nodeRadius1, (*GameObjects)[i]->pos, (*GameObjects)[i]->radius)) {
 					isColliding((*GameObjects)[i], 1);
+					(*GameObjects)[i]->isColliding(this, nodePos1);
 				}
 				if (CollisionDetector->EllipseCompare(nodePos2, nodeRadius2, (*GameObjects)[i]->pos, (*GameObjects)[i]->radius)) {
 					isColliding((*GameObjects)[i], 2);
+					(*GameObjects)[i]->isColliding(this, nodePos2);
 				}
 			}
 		}
@@ -106,20 +112,27 @@ void Springs::ellipseCollider()
 
 void Springs::mouseHover()
 {
-	if (CollisionDetector->EllipseCompare(nodePos1, nodeRadius1, ofVec2f(ofGetMouseX() - ofGetWidth() / 2, ofGetMouseY() - ofGetHeight() / 2), 0)) {
-		mouseOverNode1 = true;
-	}
-	else if (CollisionDetector->EllipseCompare(nodePos2, nodeRadius2, ofVec2f(ofGetMouseX() - ofGetWidth() / 2, ofGetMouseY() - ofGetHeight() / 2), 0)) {
-		mouseOverNode2 = true;
-	}
-	else if (CollisionDetector->EllipseCompare(pos, radius, ofVec2f(ofGetMouseX() - ofGetWidth() / 2, ofGetMouseY() - ofGetHeight() / 2), 0)) {
-		mouseOverAnchor = true;
-	}
-	else {
-		color = ofColor(255);
-		mouseOverNode1 = false;
-		mouseOverNode2 = false;
-		mouseOverAnchor = false;
+	if (GameController->MOUSE_BEING_DRAGGED == false) {
+		if (CollisionDetector->EllipseCompare(nodePos1, nodeRadius1, ofVec2f(ofGetMouseX() - ofGetWidth() / 2, ofGetMouseY() - ofGetHeight() / 2), 0)) {
+			mouseOverNode1 = true;
+			mouseOffsetFromCenter = nodePos1 - ofVec2f(ofGetMouseX() - ofGetWidth() / 2, ofGetMouseY() - ofGetHeight() / 2);
+		}
+		else if (CollisionDetector->EllipseCompare(nodePos2, nodeRadius2, ofVec2f(ofGetMouseX() - ofGetWidth() / 2, ofGetMouseY() - ofGetHeight() / 2), 0)) {
+			mouseOverNode2 = true;
+			mouseOffsetFromCenter = nodePos2 - ofVec2f(ofGetMouseX() - ofGetWidth() / 2, ofGetMouseY() - ofGetHeight() / 2);
+		}
+		else if (CollisionDetector->EllipseCompare(pos, radius, ofVec2f(ofGetMouseX() - ofGetWidth() / 2, ofGetMouseY() - ofGetHeight() / 2), 0)) {
+			mouseOverAnchor = true;
+			mouseOffsetFromCenter = pos - ofVec2f(ofGetMouseX() - ofGetWidth() / 2, ofGetMouseY() - ofGetHeight() / 2);
+		}
+		else {
+			color = ofColor(255);
+			mouseOverNode1 = false;
+			mouseOverNode2 = false;
+			mouseOverAnchor = false;
+
+			mouseOffsetFromCenter.set(0);
+		}
 	}
 }
 
@@ -139,14 +152,22 @@ void Springs::isColliding(GameObject* _other, int _node)
 	}
 }
 
+void Springs::gravity()
+{
+	if (GameController->GRAVITY == 1) {
+		nodeVel1 += ofVec2f(0, GRAVITY_FORCE * nodeMass1);
+		nodeVel2 += ofVec2f(0, GRAVITY_FORCE * nodeMass2);
+	}
+}
+
 void Springs::dragNodes() 
 {
 	if (mouseDragNode1) {
-		nodePos1.set(ofGetMouseX() - ofGetWidth() / 2, ofGetMouseY() - ofGetHeight() / 2);
+		nodePos1.set(ofVec2f(ofGetMouseX() - ofGetWidth() / 2, ofGetMouseY() - ofGetHeight() / 2) + mouseOffsetFromCenter);
 		nodeVel1.set(0);
 	}
 	else if (mouseDragNode2) {
-		nodePos2.set(ofGetMouseX() - ofGetWidth() / 2, ofGetMouseY() - ofGetHeight() / 2);
+		nodePos2.set(ofVec2f(ofGetMouseX() - ofGetWidth() / 2, ofGetMouseY() - ofGetHeight() / 2) + mouseOffsetFromCenter);
 		nodeVel2.set(0);
 	}
 	else if (mouseDragAnchor) {
@@ -158,7 +179,7 @@ void Springs::getNodeColor(int _node)
 {
 	if (_node == 1) {
 		if (mouseOverNode1 || mouseDragNode1 == true) {
-			ofSetColor(255, 0, 0);
+			ofSetColor(255, 165, 0);
 		}
 		else {
 			ofSetColor(color);
@@ -166,7 +187,7 @@ void Springs::getNodeColor(int _node)
 	}
 	else if (_node == 2) {
 		if (mouseOverNode2 || mouseDragNode2 == true) {
-			ofSetColor(255, 0, 0);
+			ofSetColor(255, 165, 0);
 		}
 		else {
 			ofSetColor(color);
@@ -174,7 +195,7 @@ void Springs::getNodeColor(int _node)
 	}
 	else if (_node == -1) {
 		if (mouseOverAnchor || mouseDragAnchor == true) {
-			ofSetColor(255, 0, 0);
+			ofSetColor(255, 165, 0);
 		}
 		else {
 			ofSetColor(125);
@@ -192,11 +213,9 @@ void Springs::applyForce(ofVec2f _force, int _node)
 {
 	if (_node == 1) {
 		nodeAccel1 += _force;
-		//nodeVel1 += nodeAccel1;
 	}
 	else if (_node == 2) {
 		nodeAccel2 += _force;
-		//nodeVel2 += nodeAccel2;
 	}
 }
 
@@ -204,12 +223,12 @@ ofVec2f Springs::applyFriction(int _node)
 {
 	if (_node == 1) {
 		friction = nodeVel1 * -1;
-		friction *= FRICTION;
+		friction *= FRICTION_FORCE;
 		return friction;
 	}
 	else if (_node == 2) {
 		friction = nodeVel2 * -1;
-		friction *= FRICTION;
+		friction *= FRICTION_FORCE;
 		return friction;
 	}
 }
@@ -218,7 +237,7 @@ ofVec2f Springs::getAcceleration(int _node)
 {
 	// Adds friction to acceleration
 	if (_node == 1) {
-		applyForce(applyFriction(1), 1);
+		//applyForce(applyFriction(1), 1);
 		applyForce(updateSprings(1) * timeStep, 1);
 		return nodeAccel1;
 	}
@@ -240,7 +259,9 @@ void Springs::updateMovementForces()
 	nodePos2 += nodeVel2 * timeStep;
 	
 	if (GameController->activeObject == this) {
-		updateGUI();
+		//if (ofGetFrameNum() % 10 == 0) {
+			updateGUI();
+		//}
 	}
 
 	nodeAccel1.set(0);
@@ -251,12 +272,14 @@ void Springs::updateGUI()
 {
 	if (!initiai_values_triggered) {
 		initiai_values_triggered = true;
-		gui_Controller->updateValues(pos, vel, accel, mass, radius, 2);
+		gui_Controller->updateMultipleValues(pos, nodePos1, nodeVel1, nodeAccel1, nodeMass1, nodeRadius1, nodePos2, nodeVel2, nodeAccel2, nodeMass2, nodeRadius2);
 	}
 	else {
-		gui_Controller->updateValues(pos, vel, accel, gui_Controller->mass2, gui_Controller->radius2, 2);
-		mass = gui_Controller->mass2;
-		radius = gui_Controller->radius2;
+		gui_Controller->updateMultipleValues(pos, nodePos1, nodeVel1, nodeAccel1, gui_Controller->nodeMass1, gui_Controller->nodeRadius1, nodePos2, nodeVel2, nodeAccel2, gui_Controller->nodeMass2, gui_Controller->nodeRadius2);
+		nodeMass1 = gui_Controller->nodeMass1;
+		nodeRadius1 = gui_Controller->nodeRadius1;
+		nodeMass2 = gui_Controller->nodeMass2;
+		nodeRadius2 = gui_Controller->nodeRadius2;
 	}
 	//mass = gui_Controller->mass;
 }
@@ -273,15 +296,19 @@ void Springs::mousePressed(int _x, int _y, int _button)
 		}
 	}
 	if (_button == 2) {
-		if (mouseOverNode1) {
-			mouseDragNode1 = true;
-			
-		}
-		else if (mouseOverNode2) {
-			mouseDragNode2 = true;
-		}
-		else if (mouseOverAnchor) {
-			mouseDragAnchor = true;
+		if (GameController->MOUSE_BEING_DRAGGED == false) {
+			if (mouseOverNode1) {
+				mouseDragNode1 = true;
+				GameController->MOUSE_BEING_DRAGGED = true;
+			}
+			else if (mouseOverNode2) {
+				mouseDragNode2 = true;
+				GameController->MOUSE_BEING_DRAGGED = true;
+			}
+			else if (mouseOverAnchor) {
+				mouseDragAnchor = true;
+				GameController->MOUSE_BEING_DRAGGED = true;
+			}
 		}
 	}
 }
@@ -296,6 +323,7 @@ void Springs::mouseReleased(int _x, int _y, int _button)
 			mouseDragNode1 = false;
 			mouseDragNode2 = false;
 			mouseDragAnchor = false;
+			GameController->MOUSE_BEING_DRAGGED = false;
 		}
 	}
 
@@ -304,6 +332,13 @@ void Springs::mouseReleased(int _x, int _y, int _button)
 void Springs::draw()
 {
 	ofPushStyle();
+
+	if (GameController->activeObject == this) {
+		color = ofColor(255, 165, 0);
+	}
+	else {
+		color = ofColor(255);
+	}
 
 	ofNoFill();
 	ofSetColor(color);

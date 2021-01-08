@@ -4,6 +4,7 @@ Controller::Controller()
 {
 	GRAVITY = 0;
 	OBJECT_SELECTED = false;
+	MOUSE_BEING_DRAGGED = false;
 
 	activeObject = nullptr;
 }

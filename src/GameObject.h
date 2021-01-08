@@ -9,9 +9,9 @@
 #include "Collisions.h"
 
 
-#define MAXIMUM_ACCELERATION 0.15
-#define MAXIMUM_VELOCITY 15
-#define FRICTION 0.015
+#define MAXIMUM_ACCELERATION 0.15 // 0.15
+#define MAXIMUM_VELOCITY 100 // 15
+#define FRICTION_FORCE 0.015
 #define GRAVITY_FORCE 0.01
 
 class GameObject {
@@ -24,19 +24,15 @@ public:
 
 	void root_update(vector<GameObject*>* _gameobjects, Controller* _controller, guiController* _guiController, Collisions* _collisionDetector);
 	virtual void update();
-	virtual void ellipseCollider();
-	virtual void mouseHover();
 
-	virtual void isColliding(GameObject* _other);
+	virtual void isColliding(GameObject* _other, ofVec2f _nodePos = { 0, 0 });
 	bool ellipseCollider_enabled;
 
-	// Event functions
 	virtual void mousePressed(int _x, int _y, int _button);
 	virtual void mouseReleased(int _x, int _y, int _button);
 	virtual void keyPressed(int key);
 	virtual void keyReleased(int key);
 
-	// Render loop
 	void root_draw();
 	virtual void draw();
 
@@ -47,6 +43,7 @@ public:
 
 	bool needs_to_be_deleted;
 	bool mouseOver;
+	ofVec2f mouseOffsetFromCenter;
 	bool active;
 
 	ofVec2f pos;
@@ -62,6 +59,7 @@ protected:
 	ofColor color;		
 	//float radius;
 	float mass;
+	bool infiniteMass;
 
 	// Modules
 	bool screenWrap_enabled;
@@ -70,14 +68,12 @@ protected:
 	
 	bool mouseHover_enabled;
 
-private:
-
-	// Modules
-	void screenWrap();
-	void screenBounce();
-	void gravity();
-	/*void ellipseCollider();*/
-	/*void mouseHover();*/
+	virtual void applyForce(ofVec2f _force, bool _limitForce = true);
+	virtual void screenWrap();
+	virtual void screenBounce();
+	virtual void gravity();
+	virtual void ellipseCollider();
+	virtual void mouseHover();
 
 };
 
