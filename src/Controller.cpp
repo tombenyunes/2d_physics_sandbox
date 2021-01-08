@@ -5,6 +5,7 @@ Controller::Controller()
 	GRAVITY = 0;
 	OBJECT_SELECTED = false;
 	MOUSE_BEING_DRAGGED = false;
+	NEW_NODE_NAME = 0;
 
 	activeObject = nullptr;
 }

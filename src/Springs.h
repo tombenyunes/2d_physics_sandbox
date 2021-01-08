@@ -1,11 +1,7 @@
 #pragma once
 
-#ifndef SPRINGS_H
-
 #include "ofMain.h"
 #include "GameObject.h"
-
-#define SPRINGS_H
 
 class Springs : public GameObject {
 	
@@ -68,5 +64,3 @@ public:
 	bool mouseDragAnchor;
 
 };
-
-#endif

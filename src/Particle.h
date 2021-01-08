@@ -1,11 +1,7 @@
 #pragma once
 
-#ifndef PARTICLE_H
-
 #include "ofMain.h"
 #include "GameObject.h"
-
-#define PARTICLE_H
 
 class Particle : public GameObject {
 	
@@ -23,5 +19,3 @@ private:
 	ofVec2f friction;
 
 };
-
-#endif

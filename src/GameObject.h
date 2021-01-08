@@ -1,8 +1,5 @@
 #pragma once
 
-#ifndef GAMEOBJECT_H
-#define GAMEOBJECT_H
-
 #include "ofMain.h"
 #include "Controller.h"
 #include "guiController.h"
@@ -76,5 +73,3 @@ protected:
 	virtual void mouseHover();
 
 };
-
-#endif

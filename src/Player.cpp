@@ -10,7 +10,6 @@ Player::Player(ofVec2f _pos, ofColor _color)
 	radius = 35;
 	mass = 10;
 
-	// Events
 	mouse_down = false;
 	mouse_button = -1;
 	
@@ -46,7 +45,6 @@ ofVec2f Player::getFriction()
 {
 	ofVec2f friction = vel * -1;
 	friction *= FRICTION_FORCE;
-
 	return friction;
 }
 
@@ -165,6 +163,7 @@ void Player::boostPlayer()
 		addForces();
 	}
 }
+
 
 // ----- RENDER LOOP ----- //
 

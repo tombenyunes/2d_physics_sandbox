@@ -1,31 +1,25 @@
 #pragma once
 
-#ifndef PLAYER_H
-
 #include "ofMain.h"
 #include "GameObject.h"
 #include "Particle.h"
 #include "Controller.h"
 #include "guiController.h"
 
-#define PLAYER_H
-
 class Player : public GameObject {
 
 public:
+
 	Player(ofVec2f _pos = { 0, 0 }, ofColor _color = ofColor(255));
 
 	void update() override;
-
-	ofVec2f getFriction();
-	ofVec2f getMovementVector();
-	ofVec2f getInterpolatedPosition();
-
-	bool playerCanMove();
-
-	void addForces();
-	ofVec2f applyAllForces();
 	void updateForces();
+	ofVec2f applyAllForces();
+	ofVec2f getFriction();
+	bool playerCanMove();
+	ofVec2f getMovementVector();
+	void addForces();
+	ofVec2f getInterpolatedPosition();
 	void updateGUI();
 	void resetForces();
 
@@ -49,5 +43,3 @@ private:
 	bool aimingBoost;
 
 };
-
-#endif

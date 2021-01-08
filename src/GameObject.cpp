@@ -25,6 +25,50 @@ GameObject::GameObject(ofVec2f _pos, ofColor _color)
 	mouseHover_enabled = false;
 }
 
+void GameObject::root_update(vector<GameObject*>* _gameobjects, Controller* _controller, guiController* _guiController, Collisions* _collisionDetector)
+{
+	if (!needs_to_be_deleted) {
+
+		GameObjects = _gameobjects;
+		GameController = _controller;
+		gui_Controller = _guiController;
+		CollisionDetector = _collisionDetector;
+
+		if (screenWrap_enabled) {
+			screenWrap();
+		}
+		if (screenBounce_enabled) {
+			screenBounce();
+		}
+		if (gravity_enabled) {
+			gravity();
+		}
+		if (ellipseCollider_enabled) {
+			ellipseCollider();
+		}
+		if (mouseHover_enabled) {
+			mouseHover();
+		}
+
+		update();
+	}
+	else {
+		//cout << "Error: 'Dead' GameObject is still being updated" << endl;
+	}
+}
+
+void GameObject::update()
+{
+	static bool initialized = false;
+	if (!initialized)
+	{
+		cout << "Error: User hasn't defined unique 'update' function for a GameObject" << endl;
+		initialized = true;
+	}
+}
+
+// ----- MODULES ----- //
+
 void GameObject::screenWrap()
 {
 	if (pos.x > 0 + (ofGetWidth() / 2)) {
@@ -61,18 +105,12 @@ void GameObject::screenBounce()
 	}
 }
 
-void GameObject::applyForce(ofVec2f _force, bool _limitForce)
-{
-	accel += _force;
-	if (_limitForce) {
-		accel.limit(MAXIMUM_ACCELERATION);
-	}
-}
-
 void GameObject::gravity()
 {
 	if (GameController->GRAVITY == 1) {
-		vel += ofVec2f(0, GRAVITY_FORCE * mass);
+		ofVec2f gravity = { 0, (float)GRAVITY_FORCE * mass };
+		//applyForce(gravity, false);
+		vel += gravity;
 	}
 }
 
@@ -88,6 +126,14 @@ void GameObject::ellipseCollider()
 				}
 			}
 		}
+	}
+}
+
+void GameObject::isColliding(GameObject* _other, ofVec2f _nodePos)
+{
+	if (!_other->isSpring) {
+		ofVec2f forceVec = pos - _other->pos;
+		applyForce(forceVec / mass);
 	}
 }
 
@@ -134,47 +180,14 @@ void GameObject::AddModule(string _id)
 	}
 }
 
-void GameObject::root_update(vector<GameObject*>* _gameobjects, Controller* _controller, guiController* _guiController, Collisions* _collisionDetector)
+void GameObject::applyForce(ofVec2f _force, bool _limitForce)
 {
-	if (!needs_to_be_deleted) {
-
-		GameObjects = _gameobjects;
-		GameController = _controller;
-		gui_Controller = _guiController;
-		CollisionDetector = _collisionDetector;
-
-		if (screenWrap_enabled) {
-			screenWrap();
-		}
-		if (screenBounce_enabled) {
-			screenBounce();
-		}
-		if (gravity_enabled) {
-			gravity();
-		}
-		if (ellipseCollider_enabled) {
-			ellipseCollider();
-		}
-		if (mouseHover_enabled) {
-			mouseHover();
-		}
-
-		update();
-	}
-	else {
-		//cout << "Error: 'Dead' GameObject is still being updated" << endl;
+	accel += _force;
+	if (_limitForce) {
+		accel.limit(MAXIMUM_ACCELERATION);
 	}
 }
 
-void GameObject::update()
-{
-	static bool initialized = false;
-	if (!initialized)
-	{
-		cout << "Error: User hasn't defined unique 'update' function for a GameObject" << endl;
-		initialized = true;
-	}
-}
 
 // ----- EVENT FUNCTIONS ----- //
 
@@ -190,23 +203,13 @@ void GameObject::keyPressed(int key)
 {
 }
 
-void GameObject::isColliding(GameObject* _other, ofVec2f _nodePos)
-{
-	if (!_other->isSpring) {
-		ofVec2f forceVec = pos - _other->pos;
-		accel += forceVec / mass;
-	}
-	else {
-		ofVec2f forceVec = pos - _nodePos;
-		accel += forceVec / mass;
-	}
-}
-
 void GameObject::keyReleased(int key)
 {
 }
 
+
 // ----- RENDER LOOP ----- //
+
 
 void GameObject::root_draw()
 {

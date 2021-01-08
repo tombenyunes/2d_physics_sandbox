@@ -4,7 +4,7 @@ guiController::guiController()
 {
 	world_gui.setup("World");
 	world_gui.add(gravity.setup("gravity", false));
-
+	
 	player_gui.setup("Player", "", 215, 10);	
 	player_gui.add(position.setup("pos", ofToString("Error: Updating failed") + ", " + ofToString("Error: Updating failed")));
 	player_gui.add(velocity.setup("vel", ofToString("Error: Updating failed") + ", " + ofToString("Error: Updating failed")));
@@ -37,11 +37,34 @@ guiController::guiController()
 	multi_selection_gui.add(nodeMass2.setup("mass", 404, 1, 500));
 	multi_selection_gui.add(nodeRadius2.setup("radius", 404, 5, 300));
 
+	create_node_gui.setup("Create", "", 10, 400);
+	create_node_gui.setDefaultWidth(240);
+	create_node_gui.add(middleMouseToCreate.setup("", "Press MouseWheel to create:"));
+	create_node_gui.add(name.setup("Type", "Error: Updating failed"));
 }
 
-void guiController::updateWorld(Controller* _controller)
+void guiController::update(Controller* _controller)
 {
-	_controller->setGravity(gravity);
+	GameController = _controller;
+	updateWorld();
+	updateCreateNodeValues();
+}
+
+void guiController::updateWorld()
+{
+	GameController->setGravity(gravity);
+}
+
+void guiController::updateCreateNodeValues()
+{
+	switch (GameController->NEW_NODE_NAME) {
+		case 0:
+			name = "Mass";
+			break;
+		case 1:
+			name = "Spring";
+			break;
+	}
 }
 
 void guiController::updateValues(ofVec2f _pos, ofVec2f _vel, ofVec2f _accel, float _mass, bool _infmass, float _radius, int panel)
@@ -75,7 +98,7 @@ void guiController::updateValues(ofVec2f _pos, ofVec2f _vel, ofVec2f _accel, flo
 			infiniteMass2 = false;
 		}
 		radius2 = _radius;
-	}	
+	}
 }
 
 void guiController::updateMultipleValues(ofVec2f _anchorpos, ofVec2f _nodePos1, ofVec2f _nodeVel1, ofVec2f _nodeAccel1, float _nodeMass1, float _nodeRadius1, ofVec2f _nodePos2, ofVec2f _nodeVel2, ofVec2f _nodeAccel2, float _nodeMass2, float _nodeRadius2)

@@ -18,14 +18,6 @@ Object::Object(ofVec2f _pos, float _mass, float _radius)
 	AddModule("mouseHover");
 }
 
-void Object::dragNodes()
-{
-	if (mouseDrag) {		
-		pos.set(ofVec2f(ofGetMouseX() - ofGetWidth() / 2, ofGetMouseY() - ofGetHeight() / 2) + mouseOffsetFromCenter);
-		vel.set(0);
-	}
-}
-
 void Object::update()
 {
 	updateForces();
@@ -34,11 +26,10 @@ void Object::update()
 	resetForces();
 }
 
-ofVec2f Object::getFriction()
+void Object::updateForces()
 {
-	friction = vel * -1;
-	friction *= FRICTION_FORCE;
-	return friction;
+	applyAllForces();
+	addForces();
 }
 
 ofVec2f Object::applyAllForces()
@@ -47,16 +38,17 @@ ofVec2f Object::applyAllForces()
 	return accel;
 }
 
-void Object::addForces()
+ofVec2f Object::getFriction()
 {
-	vel += accel.limit(MAXIMUM_ACCELERATION);
-	pos += vel.limit(MAXIMUM_VELOCITY);
+	ofVec2f friction = vel * -1;
+	friction *= FRICTION_FORCE;
+	return friction;
 }
 
-void Object::updateForces()
+void Object::addForces()
 {
-	applyAllForces();
-	addForces();
+	vel += accel;
+	pos += vel.limit(MAXIMUM_VELOCITY);
 }
 
 void Object::updateGUI()
@@ -80,10 +72,41 @@ void Object::updateGUI()
 	}
 }
 
+void Object::dragNodes()
+{
+	static ofVec2f mousePosBeforeDrag;
+	if (mouseDrag) {
+		ofVec2f prevPos = ofVec2f(ofGetMouseX() - ofGetWidth() / 2, ofGetMouseY() - ofGetHeight() / 2) + mouseOffsetFromCenter;
+
+		ofVec2f newPos;
+		newPos.x = ofLerp(pos.x, prevPos.x, 0.1);
+		newPos.y = ofLerp(pos.y, prevPos.y, 0.1);
+
+		pos.set(newPos);
+
+		vel.set(0);
+
+		startedDragging = true;
+		mousePosBeforeDrag = ofVec2f(ofGetMouseX() - ofGetWidth() / 2, ofGetMouseY() - ofGetHeight() / 2);
+	}
+	else {
+		if (startedDragging == true) {
+			startedDragging = false;
+			ofVec2f mousespeed = (ofVec2f(ofGetMouseX() - ofGetWidth() / 2, ofGetMouseY() - ofGetHeight() / 2) - mousePosBeforeDrag) / 3;
+			applyForce(mousespeed, false);
+			addForces();
+		}
+	}
+}
+
 void Object::resetForces()
 {
 	accel.set(0);
 }
+
+
+// ----- EVENT FUNCTIONS ----- //
+
 
 void Object::mousePressed(int _x, int _y, int _button)
 {
@@ -117,18 +140,25 @@ void Object::mouseReleased(int _x, int _y, int _button)
 	}
 }
 
+
+// ----- RENDER LOOP ----- //
+
+
 void Object::draw()
 {
 	ofPushStyle();
 
-	if (GameController->activeObject == this) {
+	if (infiniteMass) {
+	ofSetColor(255, 0, 0);
+	}
+	else if (GameController->activeObject == this) {
 		ofSetColor(255, 165, 0);
 	}
 	else {
 		ofSetColor(color);
 	}
 	ofNoFill();
-	ofSetLineWidth(ofMap(mass, 1, 10000, 0.1, 10));
+	ofSetLineWidth(ofMap(mass, 1, 500, 0.1, 10));
 
 	ofEllipse(pos.x, pos.y, radius, radius);
 

@@ -1,7 +1,5 @@
 #pragma once
 
-#ifndef OFAPP_H
-
 #include "ofMain.h"
 #include "GameObject.h"
 #include "Controller.h"
@@ -13,8 +11,6 @@
 #include "ofxGui.h"
 #include "guiController.h"
 #include "Collisions.h"
-
-#define OFAPP_H
 
 class ofApp : public ofBaseApp{
 
@@ -28,6 +24,7 @@ class ofApp : public ofBaseApp{
 		void mouseMoved(int x, int y );
 		void mouseDragged(int x, int y, int button);
 		void mousePressed(int x, int y, int button);
+		void mouseScrolled(int x, int y, float scrollX, float scrollY);
 		void mouseReleased(int x, int y, int button);
 		void mouseEntered(int x, int y);
 		void mouseExited(int x, int y);
@@ -46,5 +43,3 @@ class ofApp : public ofBaseApp{
 		bool draw_gui = true;
 
 };
-
-#endif

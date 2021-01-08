@@ -1,8 +1,5 @@
 #pragma once
 
-#ifndef CONTROLLER_H
-#define CONTROLLER_H
-
 #include "ofMain.h"
 
 class GameObject;
@@ -23,8 +20,7 @@ public:
 	bool GRAVITY;
 	bool OBJECT_SELECTED;
 	bool MOUSE_BEING_DRAGGED;
+	int NEW_NODE_NAME;
 
 
 };
-
-#endif
