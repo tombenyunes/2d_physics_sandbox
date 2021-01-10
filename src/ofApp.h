@@ -11,6 +11,7 @@
 #include "ofxGui.h"
 #include "guiController.h"
 #include "Collisions.h"
+#include "EventManager.h"
 
 class ofApp : public ofBaseApp{
 
@@ -39,9 +40,8 @@ class ofApp : public ofBaseApp{
 
 		Controller* GameController;
 		guiController* gui_Controller;
+		EventManager Events;
 
 		Collisions* CollisionDetector;
-
-		bool draw_gui = true;
 
 };

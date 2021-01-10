@@ -29,20 +29,43 @@ public:
 	
 	Controller();
 
-	void setGravity(bool _value);
-	void clearAll();
-
 	void makeActive(GameObject* _this);
 	GameObject* getActive();
 
-	GameObject* activeObject;
+	void setGravity(bool _value);
+	bool getGravity();
 
+	void setObjectSelected(bool _value);
+	bool getObjectSelected();
+
+	void setMouseDragged(bool _value);
+	bool getMouseDragged();
+
+	void setNewNodeName(bool _value);
+	int getNewNodeName();
+
+	void setUseHardCollisions(bool _value);
+	bool getUseHardCollisions();
+
+	void setDeleteAll(bool _value);
+	bool getDeleteAll();
+
+	void setGUIVisible(bool _value);
+	bool getGUIVisible();
+
+	void setCanUserInput(bool _value);
+	bool getCanUserInput();
+
+private:
+
+	GameObject* ACTIVE_OBJECT;
 	bool GRAVITY;
 	bool NEED_TO_DELETE_ALL;
 	bool OBJECT_SELECTED;
 	bool MOUSE_BEING_DRAGGED;
 	int NEW_NODE_NAME;
 	bool HARD_COLLISIONS;
-
-
+	bool GUI_VISIBLE;
+	bool USER_CAN_INPUT;
+	
 };

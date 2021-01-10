@@ -16,7 +16,8 @@ public:
 	void updateCreateNodeValues();
 	
 	void windowResized(int w, int h);
-	void pressed();
+	
+	void setClearAll();
 
 	Controller* GameController;
 
@@ -36,8 +37,9 @@ public:
 	// ----- Parameters ----- //
 	
 	// World
-	ofxToggle gravity;
 	ofxButton newScene;
+	ofxToggle gravity;
+	ofxToggle hardCollisions;
 	
 	// Player
 	ofxLabel position;
@@ -85,6 +87,7 @@ public:
 	ofxLabel name;
 	ofxLabel howToMove;
 	ofxLabel howToSelect;
+	ofxLabel howToDrag;
 	ofxLabel howToCreate;
 	ofxLabel howToChangeType;
 	ofxLabel howToDelete;

@@ -14,7 +14,7 @@ public:
 
 	void update() override;
 	void updateForces();
-	ofVec2f applyAllForces();
+	void applyAllForces();
 	ofVec2f getFriction();
 	bool playerCanMove();
 	ofVec2f getMovementVector();
@@ -22,6 +22,7 @@ public:
 	void resetForces();
 
 	void mousePressed(int _x, int _y, int _button) override;
+	void mouseDragged(int _x, int _y, int _button) override;
 	void mouseReleased(int _x, int _y, int _button) override;
 	void keyPressed(int key) override;
 	void keyReleased(int key) override;

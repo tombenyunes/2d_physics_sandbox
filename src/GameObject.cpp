@@ -3,6 +3,7 @@
 GameObject::GameObject(ofVec2f _pos, ofColor _color)
 {
 	pos.set(_pos);
+	prevPos.set(99999, 99999);
 	color.set(_color);
 
 	vel.set(0);
@@ -58,6 +59,7 @@ void GameObject::root_update(vector<GameObject*>* _gameobjects, Controller* _con
 			mouseHover();
 		}
 
+		prevPos = pos;
 		update();
 	}
 	else {
@@ -115,10 +117,9 @@ void GameObject::screenBounce()
 
 void GameObject::gravity()
 {
-	if (GameController->GRAVITY == 1 || affectedByGravity) {
+	if (GameController->getGravity() == 1 || affectedByGravity) {
 		ofVec2f gravity = { 0, (float)GRAVITY_FORCE * mass };
-		//applyForce(gravity, false);
-		vel += gravity;
+		applyForce(accel, gravity, false);
 	}
 }
 
@@ -147,22 +148,22 @@ void GameObject::isColliding(GameObject* _other, ofVec2f _nodePos)
 		otherPos = _other->pos;
 	}
 
-	if (GameController->HARD_COLLISIONS) {
+	if (GameController->getUseHardCollisions()) {
 		ofVec2f forceVec = pos - otherPos;
-		pos = prevPos;
+		if (prevPos != ofVec2f(99999, 99999)) pos = prevPos;
 		//vel.set(0);
-		applyForce((forceVec / mass), false);
+		applyForce(accel, (forceVec / mass), false);
 	}
 	else {
 		ofVec2f forceVec = pos - otherPos;
-		applyForce((forceVec / mass), true);
+		applyForce(accel, (forceVec / mass), true);
 	}
 }
 
 void GameObject::mouseHover()
 {
 	if (CollisionDetector->EllipseCompare(pos, radius, ofVec2f(ofGetMouseX()-ofGetWidth()/2, ofGetMouseY()-ofGetHeight()/2), 0)) {
-		if (GameController->MOUSE_BEING_DRAGGED == false) {
+		if (GameController->getMouseDragged() == false) {
 			color = ofColor(255, 165, 0);
 			mouseOver = true;
 			mouseOffsetFromCenter = pos - ofVec2f(ofGetMouseX() - ofGetWidth() / 2, ofGetMouseY() - ofGetHeight() / 2);
@@ -202,14 +203,14 @@ void GameObject::AddModule(string _id)
 	}
 }
 
-void GameObject::applyForce(ofVec2f _force, bool _limit, float _limitAmount)
+void GameObject::applyForce(ofVec2f& _accel, ofVec2f _force, bool _limit, float _limitAmount)
 {
 	if (_limit) {
 		_force.limit(_limitAmount); // default MAXIMUM_ACCELERATION
-		accel += _force;
+		_accel += _force;
 	}
 	else {
-		accel += _force;
+		_accel += _force;
 		addForces(false);
 	}
 }
@@ -249,7 +250,12 @@ ofVec2f GameObject::getInterpolatedPosition()
 
 // ----- EVENT FUNCTIONS ----- //
 
+
 void GameObject::mousePressed(int _x, int _y, int _button)
+{
+}
+
+void GameObject::mouseDragged(int _x, int _y, int _button)
 {
 }
 

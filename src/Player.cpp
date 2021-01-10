@@ -25,7 +25,6 @@ Player::Player(ofVec2f _pos, ofColor _color)
 
 void Player::update()
 {
-	prevPos = pos;
 	updateForces();
 	updateGUI();
 	resetForces();
@@ -37,11 +36,10 @@ void Player::updateForces()
 	addForces(true);
 }
 
-ofVec2f Player::applyAllForces()
+void Player::applyAllForces()
 {
-	applyForce(getFriction());
-	if (playerCanMove()) applyForce(getMovementVector(), true, 0.15);
-	return accel;
+	applyForce(accel, getFriction());
+	if (playerCanMove()) applyForce(accel, getMovementVector(), true, 0.15);
 }
 
 ofVec2f Player::getFriction()
@@ -105,6 +103,13 @@ void Player::mousePressed(int _x, int _y, int _button)
 	mouse_pos = { (float)_x, (float)_y };
 }
 
+void Player::mouseDragged(int _x, int _y, int _button)
+{
+	mouse_down = true;
+	mouse_button = _button;
+	mouse_pos = { (float)_x, (float)_y };
+}
+
 void Player::mouseReleased(int _x, int _y, int _button)
 {
 	mouse_down = false;
@@ -136,7 +141,7 @@ void Player::boostPlayer()
 {
 	aimingBoost = false;
 	if (vel.length() < 5) {
-		applyForce((pos - ofVec2f(ofGetMouseX() - ofGetWidth() / 2, ofGetMouseY() - ofGetHeight() / 2)), true, 10);
+		applyForce(accel, (pos - ofVec2f(ofGetMouseX() - ofGetWidth() / 2, ofGetMouseY() - ofGetHeight() / 2)), true, 10);
 	}
 }
 

@@ -1,8 +1,10 @@
 #include "Object.h"
 
-Object::Object(ofVec2f _pos, float _mass, float _radius)
+Object::Object(ofVec2f _pos, float _mass, float _radius, Controller* _controller)
 {
-	//pos.set(ofRandom(-ofGetWidth() / 2, ofGetWidth() / 2), ofRandom(-ofGetHeight() / 2, ofGetHeight() / 2));
+	// game controller must be initialized before waiting for root_update, as very occasionally it is required before the first update cycle
+	GameController = _controller;
+
 	pos.set(_pos);
 	color = ofColor(255);
 	mass = _mass;
@@ -20,7 +22,7 @@ Object::Object(ofVec2f _pos, float _mass, float _radius)
 
 void Object::update()
 {
-	prevPos = pos;
+	prevMousePos.set(ofGetMouseX() / 2 - ofGetWidth() / 2, ofGetMouseY() - ofGetHeight() / 2);
 	updateForces();
 	updateGUI();
 	dragNodes();
@@ -33,10 +35,9 @@ void Object::updateForces()
 	addForces(false);
 }
 
-ofVec2f Object::applyAllForces()
+void Object::applyAllForces()
 {
-	applyForce(getFriction());
-	return accel;
+	applyForce(accel, getFriction());
 }
 
 ofVec2f Object::getFriction()
@@ -48,7 +49,7 @@ ofVec2f Object::getFriction()
 
 void Object::updateGUI()
 {
-	if (GameController->activeObject == this) {
+	if (GameController->getActive() == this) {
 		if (!initiai_values_triggered) {
 			initiai_values_triggered = true;
 			gui_Controller->updateValues(pos, vel, accel, mass, infiniteMass, radius, affectedByGravity, 2);
@@ -89,7 +90,7 @@ void Object::dragNodes()
 		if (startedDragging == true) {
 			startedDragging = false;
 			ofVec2f mousespeed = (ofVec2f(ofGetMouseX() - ofGetWidth() / 2, ofGetMouseY() - ofGetHeight() / 2) - mousePosBeforeDrag) / 3;
-			applyForce(mousespeed, false);
+			applyForce(accel, mousespeed, false);
 		}
 	}
 }
@@ -108,16 +109,23 @@ void Object::mousePressed(int _x, int _y, int _button)
 	if (!mouse_down_triggered) {
 		mouse_down_triggered = true;
 		if (_button == 2 && mouseOver) {
-			if (GameController->activeObject != this) {
+			if (GameController->getActive() != this) {
 				initiai_values_triggered = false;
 				GameController->makeActive(this);
 			}
 		}
 	}
+}
+
+void Object::mouseDragged(int _x, int _y, int _button)
+{
 	if (_button == 2) {
-		if (mouseOver && GameController->MOUSE_BEING_DRAGGED == false) {
-			mouseDrag = true;
-			GameController->MOUSE_BEING_DRAGGED = true;
+		if (mouseOver && GameController->getMouseDragged() == false) {			
+			if (prevMousePos.distance(ofVec2f(ofGetMouseX() / 2 - ofGetWidth() / 2, ofGetMouseY() - ofGetHeight() / 2)) > 2) {
+				// the node will only be moved by the mouse if it has been moved by more than 1 pixel - this prevents accidentally stopping something by selecting it
+				mouseDrag = true;
+				GameController->setMouseDragged(true);				
+			}
 		}
 	}
 }
@@ -130,7 +138,7 @@ void Object::mouseReleased(int _x, int _y, int _button)
 		}
 		if (mouseDrag) {
 			mouseDrag = false;
-			GameController->MOUSE_BEING_DRAGGED = false;
+			GameController->setMouseDragged(false);
 		}
 	}
 }
@@ -146,7 +154,7 @@ void Object::draw()
 	if (infiniteMass) {
 	ofSetColor(255, 0, 0);
 	}
-	else if (GameController->activeObject == this) {
+	else if (GameController->getActive() == this) {
 		ofSetColor(255, 165, 0);
 	}
 	else {

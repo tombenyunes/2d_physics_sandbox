@@ -7,51 +7,46 @@ class Springs : public GameObject {
 	
 public:
 
-	Springs(ofVec2f _anchorPos, float _nodeRadius1, float _nodeMass1, float _nodeRadius2, float _nodeMass2, float _k, float _damping, float _springmass);
-
-	ofVec2f updateSprings(int _node);
-	void ellipseCollider() override;
-	void mouseHover() override;
-	void isColliding(GameObject* _other, int _node);
-
-	void gravity() override;
-	void dragNodes();
-	void getNodeColor(int _node);
+	Springs(ofVec2f _anchorPos, float _nodeRadius1, float _nodeMass1, float _nodeRadius2, float _nodeMass2, float _k, float _damping, float _springmass, Controller* _controller);
 
 	void update() override;
-	void draw() override;
-
-	void applyForce(ofVec2f _force, int _node);
+	void updateForces();
+	void applyAllForces(int _node);
+	ofVec2f updateSprings(int _node);
 	ofVec2f applyFriction(int _node);
-	ofVec2f getAcceleration(int _node);
-	void updateMovementForces();
-	void screenBounce();
+	void addForces();	
 	void updateGUI();
+	void resetForces();
+
+	void screenBounce() override;
+	void gravity() override;
+	void mouseHover() override;
+	void dragNodes();
+	void ellipseCollider() override;
+	void isColliding(GameObject* _other, int _node);
+
+	void draw() override;
+	void getNodeColor(int _node);
 
 	void mousePressed(int _x, int _y, int _button) override;
-	void mouseReleased(int _x, int _y, int _button) override;
-
-	ofVec2f friction;
-
-	float gravityForce;
-	float timeStep;
-
+	void mouseReleased(int _x, int _y, int _button) override;	
+	
 	float k;
 	float damping;
 	float springmass;
+	float timeStep;
+	
 	ofVec2f nodePos1;
 	ofVec2f nodeVel1;
 	ofVec2f nodeAccel1;
 	float nodeRadius1;
 	float nodeMass1;
-	float nodeGravityForce1;
 
 	ofVec2f nodePos2;
 	ofVec2f nodeVel2;
 	ofVec2f nodeAccel2;
 	float nodeRadius2;
 	float nodeMass2;
-	float nodeGravityForce2;
 
 	bool mouse_down_triggered;
 	bool initiai_values_triggered;

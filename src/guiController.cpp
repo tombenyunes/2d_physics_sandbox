@@ -10,11 +10,12 @@ guiController::guiController()
 	ofVec2f dampingBounds = { 0.1, 8 };
 	ofVec2f springmassBounds = { 0.1, 50 };
 
-	newScene.addListener(this, &guiController::pressed);
+	newScene.addListener(this, &guiController::setClearAll);
 
 	world_gui.setup("World", "", buffer, buffer);
-	world_gui.add(gravity.setup("global gravity", false));
 	world_gui.add(newScene.setup("clear all"));
+	world_gui.add(gravity.setup("global gravity", false));
+	world_gui.add(hardCollisions.setup("hard collisions", false));
 	
 	player_gui.setup("Player", "", world_gui.getPosition().x + world_gui.getWidth() + buffer, buffer);
 	player_gui.add(position.setup("pos", errorMessage));
@@ -58,12 +59,13 @@ guiController::guiController()
 	multi_selection_gui_spring.add(spring_affectedByGravity.setup("gravity", false));
 
 	create_node_gui.setup("Create", "", ofGetWidth() / 2 - create_node_gui.getWidth() / 2, buffer);
-	create_node_gui.add(howToMove.setup("", "Left Click to Move"));
-	create_node_gui.add(howToSelect.setup("", "Right Click to Select"));
-	create_node_gui.add(howToCreate.setup("", "Press 'c' to create"));
-	create_node_gui.add(howToChangeType.setup("", "MouseWheel changes type:"));
+	create_node_gui.add(howToMove.setup("", "Hold M1 to Move Player"));
+	create_node_gui.add(howToDrag.setup("", "Hold M2 to Drag Node"));
+	create_node_gui.add(howToSelect.setup("", "Press M2 to Select Node"));
+	create_node_gui.add(howToDelete.setup("", "Press 'x' to Delete Node"));
+	create_node_gui.add(howToCreate.setup("", "Press 'c' to Create Node"));
+	create_node_gui.add(howToChangeType.setup("", "MouseWheel Changes Type:"));
 	create_node_gui.add(name.setup("Type", errorMessage));
-	create_node_gui.add(howToDelete.setup("", "Press 'x' to delete"));
 }
 
 void guiController::update(Controller* _controller)
@@ -76,11 +78,12 @@ void guiController::update(Controller* _controller)
 void guiController::updateWorld()
 {
 	GameController->setGravity(gravity);
+	GameController->setUseHardCollisions(hardCollisions);
 }
 
 void guiController::updateCreateNodeValues()
 {
-	switch (GameController->NEW_NODE_NAME) {
+	switch (GameController->getNewNodeName()) {
 		case 0:
 			name = "Mass";
 			break;
@@ -158,7 +161,7 @@ void guiController::windowResized(int w, int h)
 	multi_selection_gui_spring.setPosition(ofGetWidth() - multi_selection_gui_spring.getWidth() - buffer, multi_selection_gui_node2.getPosition().y + multi_selection_gui_node2.getHeight() + buffer);
 }
 
-void guiController::pressed()
+void guiController::setClearAll()
 {
-	GameController->clearAll();
+	GameController->setDeleteAll(true);
 }

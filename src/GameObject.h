@@ -20,6 +20,7 @@ public:
 	bool ellipseCollider_enabled;
 
 	virtual void mousePressed(int _x, int _y, int _button);
+	virtual void mouseDragged(int _x, int _y, int _button);
 	virtual void mouseReleased(int _x, int _y, int _button);
 	
 	void root_keyPressed(int key);
@@ -72,7 +73,7 @@ protected:
 	virtual void gravity();
 	virtual void ellipseCollider();
 	virtual void mouseHover();
-	virtual void applyForce(ofVec2f _force, bool _limit = true, float _limitAmount = MAXIMUM_ACCELERATION);
+	virtual void applyForce(ofVec2f& _accel, ofVec2f _force, bool _limit = true, float _limitAmount = MAXIMUM_ACCELERATION);
 	virtual void addForces(bool _interpPos);
 	virtual ofVec2f getInterpolatedPosition();
 
