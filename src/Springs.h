@@ -25,6 +25,7 @@ public:
 	ofVec2f applyFriction(int _node);
 	ofVec2f getAcceleration(int _node);
 	void updateMovementForces();
+	void screenBounce();
 	void updateGUI();
 
 	void mousePressed(int _x, int _y, int _button) override;
@@ -34,8 +35,6 @@ public:
 
 	float gravityForce;
 	float timeStep;
-	float g_k;
-	float g_damping;
 
 	float k;
 	float damping;

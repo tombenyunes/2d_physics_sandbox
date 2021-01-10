@@ -8,7 +8,9 @@ Player::Player(ofVec2f _pos, ofColor _color)
 	vel.set(0);
 	accel.set(0);
 	radius = 35;
-	mass = 10;
+	mass = 500;
+
+	isPlayer = true;
 
 	mouse_down = false;
 	mouse_button = -1;
@@ -23,6 +25,7 @@ Player::Player(ofVec2f _pos, ofColor _color)
 
 void Player::update()
 {
+	prevPos = pos;
 	updateForces();
 	updateGUI();
 	resetForces();
@@ -31,13 +34,13 @@ void Player::update()
 void Player::updateForces()
 {
 	applyAllForces();
-	addForces();
+	addForces(true);
 }
 
 ofVec2f Player::applyAllForces()
 {
 	applyForce(getFriction());
-	if (playerCanMove()) applyForce(getMovementVector());
+	if (playerCanMove()) applyForce(getMovementVector(), true, 0.15);
 	return accel;
 }
 
@@ -65,50 +68,24 @@ ofVec2f Player::getMovementVector()
 	return movementVec;
 }
 
-void Player::addForces()
-{
-	vel += accel;
-	vel.limit(MAXIMUM_VELOCITY);
-	pos = getInterpolatedPosition();
-}
-
-ofVec2f Player::getInterpolatedPosition()
-{
-	//ofVec2f newPos;
-	//newPos.x = ofLerp(pos.x, pos.x + vel.x, 0.75);
-	//newPos.y = ofLerp(pos.y, pos.y + vel.y, 0.75);
-	//return newPos;
-
-	int progress = (ofGetFrameNum() % 100) / 100;
-	ofVec2f powInterpIn;
-	powInterpIn.x = ofNextPow2(progress);
-	powInterpIn.y = ofNextPow2(progress);
-
-	float sinInterp = sin(progress * (PI / 2));
-
-	ofVec2f newPos;
-	newPos.x = ofLerp(pos.x, pos.x + vel.x, powInterpIn.x);
-	newPos.y = ofLerp(pos.y, pos.y + vel.y, powInterpIn.y);
-	return newPos;
-}
-
 void Player::updateGUI()
 {
 	static bool initiai_values_triggered = false;
 	if (!initiai_values_triggered) {
 		initiai_values_triggered = true;
-		gui_Controller->updateValues(pos, vel, accel, mass, infiniteMass, radius, 1);
+		gui_Controller->updateValues(pos, vel, accel, mass, infiniteMass, radius, affectedByGravity, 1);
 	}
 	else {
-		gui_Controller->updateValues(pos, vel, accel, gui_Controller->mass, gui_Controller->infiniteMass, gui_Controller->radius, 1);
+		gui_Controller->updateValues(pos, vel, accel, gui_Controller->mass, gui_Controller->infiniteMass, gui_Controller->radius, gui_Controller->affectedByGravity, 1);
 		if (infiniteMass) {
-			mass = 999999999999;
+			mass = 9999999999999999999;
 		}
 		else {
 			mass = gui_Controller->mass;
 		}
 		radius = gui_Controller->radius;
 		infiniteMass = gui_Controller->infiniteMass;
+		affectedByGravity = gui_Controller->affectedByGravity;
 	}
 }
 
@@ -158,9 +135,8 @@ void Player::keyReleased(int key)
 void Player::boostPlayer()
 {
 	aimingBoost = false;
-	if (vel.length() < 15) {
-		applyForce((pos - ofVec2f(ofGetMouseX() - ofGetWidth() / 2, ofGetMouseY() - ofGetHeight() / 2) * 10).limit(10), false);
-		addForces();
+	if (vel.length() < 5) {
+		applyForce((pos - ofVec2f(ofGetMouseX() - ofGetWidth() / 2, ofGetMouseY() - ofGetHeight() / 2)), true, 10);
 	}
 }
 
@@ -183,10 +159,6 @@ void Player::draw()
 		glEnd();
 		glDisable(GL_LINE_STIPPLE);
 		glFlush();
-
-		//ofSetLineWidth(0.5);
-		//ofSetColor(125);
-		//ofLine(ofVec3f(pos.x, pos.y, 0), drawVelPath());
 		
 		ofPopMatrix();
 	}
@@ -195,9 +167,14 @@ void Player::draw()
 
 	ofSetColor(color);
 	ofFill();
-	float mult = (ofMap(vel.length(), 0, 15, 1, 0.25));
-	ofEllipse(pos.x, pos.y, radius * mult, radius * mult);
-	//ofLine(ofVec3f(pos.x, pos.y, 0), ofVec3f(vel.x*ofGetWidth(), vel.y*ofGetHeight(), 0));
+	//float mult = (ofMap(vel.length(), 0, 15, 1, 0.25));
+	ofEllipse(pos.x, pos.y, radius /** mult*/, radius /** mult*/);
+
+	ofVec2f velLine = vel;
+	velLine.normalize();
+
+	ofSetLineWidth(0.01);
+	//ofLine(ofVec3f(pos.x, pos.y, 0), ofVec3f(velLine.x * ofGetWidth(), velLine.y * ofGetHeight(), 0));
 }
 
 ofVec3f Player::drawVelPath()

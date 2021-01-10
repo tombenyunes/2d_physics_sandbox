@@ -10,6 +10,7 @@ GameObject::GameObject(ofVec2f _pos, ofColor _color)
 	radius = 35;
 	mass = 10;
 	infiniteMass = false;
+	affectedByGravity = false;
 
 	needs_to_be_deleted = false;
 	mouseOver = false;
@@ -17,6 +18,8 @@ GameObject::GameObject(ofVec2f _pos, ofColor _color)
 	active = false;
 
 	isSpring = false;
+
+	deleteKeyDown = false;
 
 	screenWrap_enabled = false;
 	screenBounce_enabled = false;
@@ -27,6 +30,11 @@ GameObject::GameObject(ofVec2f _pos, ofColor _color)
 
 void GameObject::root_update(vector<GameObject*>* _gameobjects, Controller* _controller, guiController* _guiController, Collisions* _collisionDetector)
 {
+	if (deleteKeyDown) {
+		if (mouseOver) {
+			needs_to_be_deleted = true;
+		}		
+	}
 	if (!needs_to_be_deleted) {
 
 		GameObjects = _gameobjects;
@@ -107,7 +115,7 @@ void GameObject::screenBounce()
 
 void GameObject::gravity()
 {
-	if (GameController->GRAVITY == 1) {
+	if (GameController->GRAVITY == 1 || affectedByGravity) {
 		ofVec2f gravity = { 0, (float)GRAVITY_FORCE * mass };
 		//applyForce(gravity, false);
 		vel += gravity;
@@ -131,9 +139,23 @@ void GameObject::ellipseCollider()
 
 void GameObject::isColliding(GameObject* _other, ofVec2f _nodePos)
 {
-	if (!_other->isSpring) {
-		ofVec2f forceVec = pos - _other->pos;
-		applyForce(forceVec / mass);
+	ofVec2f otherPos;
+	if (_other->isSpring) {		
+		otherPos = _nodePos;
+	}
+	else {
+		otherPos = _other->pos;
+	}
+
+	if (GameController->HARD_COLLISIONS) {
+		ofVec2f forceVec = pos - otherPos;
+		pos = prevPos;
+		//vel.set(0);
+		applyForce((forceVec / mass), false);
+	}
+	else {
+		ofVec2f forceVec = pos - otherPos;
+		applyForce((forceVec / mass), true);
 	}
 }
 
@@ -180,12 +202,48 @@ void GameObject::AddModule(string _id)
 	}
 }
 
-void GameObject::applyForce(ofVec2f _force, bool _limitForce)
+void GameObject::applyForce(ofVec2f _force, bool _limit, float _limitAmount)
 {
-	accel += _force;
-	if (_limitForce) {
-		accel.limit(MAXIMUM_ACCELERATION);
+	if (_limit) {
+		_force.limit(_limitAmount); // default MAXIMUM_ACCELERATION
+		accel += _force;
 	}
+	else {
+		accel += _force;
+		addForces(false);
+	}
+}
+
+void GameObject::addForces(bool _interpPos)
+{
+	vel += accel;
+	vel.limit(MAXIMUM_VELOCITY);
+	if (_interpPos) {
+		pos = getInterpolatedPosition();
+	}
+	else {
+		pos += vel;
+	}
+}
+
+ofVec2f GameObject::getInterpolatedPosition()
+{
+	//ofVec2f newPos;
+	//newPos.x = ofLerp(pos.x, pos.x + vel.x, 0.75);
+	//newPos.y = ofLerp(pos.y, pos.y + vel.y, 0.75);
+	//return newPos;
+
+	int progress = (ofGetFrameNum() % 100) / 100;
+	ofVec2f powInterpIn;
+	powInterpIn.x = ofNextPow2(progress);
+	powInterpIn.y = ofNextPow2(progress);
+
+	float sinInterp = sin(progress * (PI / 2));
+
+	ofVec2f newPos;
+	newPos.x = ofLerp(pos.x, pos.x + vel.x, powInterpIn.x);
+	newPos.y = ofLerp(pos.y, pos.y + vel.y, powInterpIn.y);
+	return newPos;
 }
 
 
@@ -199,8 +257,24 @@ void GameObject::mouseReleased(int _x, int _y, int _button)
 {
 }
 
+void GameObject::root_keyPressed(int key)
+{
+	if (key == 120) {
+		deleteKeyDown = true;
+	}
+	keyPressed(key);
+}
+
 void GameObject::keyPressed(int key)
 {
+}
+
+void GameObject::root_keyReleased(int key)
+{
+	if (key == 120) {
+		deleteKeyDown = false;
+	}
+	keyReleased(key);
 }
 
 void GameObject::keyReleased(int key)

@@ -20,6 +20,7 @@ Object::Object(ofVec2f _pos, float _mass, float _radius)
 
 void Object::update()
 {
+	prevPos = pos;
 	updateForces();
 	updateGUI();
 	dragNodes();
@@ -29,7 +30,7 @@ void Object::update()
 void Object::updateForces()
 {
 	applyAllForces();
-	addForces();
+	addForces(false);
 }
 
 ofVec2f Object::applyAllForces()
@@ -45,29 +46,24 @@ ofVec2f Object::getFriction()
 	return friction;
 }
 
-void Object::addForces()
-{
-	vel += accel;
-	pos += vel.limit(MAXIMUM_VELOCITY);
-}
-
 void Object::updateGUI()
 {
 	if (GameController->activeObject == this) {
 		if (!initiai_values_triggered) {
 			initiai_values_triggered = true;
-			gui_Controller->updateValues(pos, vel, accel, mass, infiniteMass, radius, 2);
+			gui_Controller->updateValues(pos, vel, accel, mass, infiniteMass, radius, affectedByGravity, 2);
 		}
 		else {
-			gui_Controller->updateValues(pos, vel, accel, gui_Controller->mass2, gui_Controller->infiniteMass2, gui_Controller->radius2, 2);
+			gui_Controller->updateValues(pos, vel, accel, gui_Controller->selected_mass, gui_Controller->selected_infiniteMass, gui_Controller->selected_radius, gui_Controller->selected_affectedByGravity, 2);
 			if (infiniteMass) {
 				mass = 999999999999;
 			}
 			else {
-				mass = gui_Controller->mass2;
+				mass = gui_Controller->selected_mass;
 			}
-			radius = gui_Controller->radius2;
-			infiniteMass = gui_Controller->infiniteMass2;
+			radius = gui_Controller->selected_radius;
+			infiniteMass = gui_Controller->selected_infiniteMass;
+			affectedByGravity = gui_Controller->selected_affectedByGravity;
 		}
 	}
 }
@@ -76,11 +72,11 @@ void Object::dragNodes()
 {
 	static ofVec2f mousePosBeforeDrag;
 	if (mouseDrag) {
-		ofVec2f prevPos = ofVec2f(ofGetMouseX() - ofGetWidth() / 2, ofGetMouseY() - ofGetHeight() / 2) + mouseOffsetFromCenter;
+		ofVec2f prevPos2 = ofVec2f(ofGetMouseX() - ofGetWidth() / 2, ofGetMouseY() - ofGetHeight() / 2) + mouseOffsetFromCenter;
 
 		ofVec2f newPos;
-		newPos.x = ofLerp(pos.x, prevPos.x, 0.1);
-		newPos.y = ofLerp(pos.y, prevPos.y, 0.1);
+		newPos.x = ofLerp(pos.x, prevPos2.x, 0.1);
+		newPos.y = ofLerp(pos.y, prevPos2.y, 0.1);
 
 		pos.set(newPos);
 
@@ -94,7 +90,6 @@ void Object::dragNodes()
 			startedDragging = false;
 			ofVec2f mousespeed = (ofVec2f(ofGetMouseX() - ofGetWidth() / 2, ofGetMouseY() - ofGetHeight() / 2) - mousePosBeforeDrag) / 3;
 			applyForce(mousespeed, false);
-			addForces();
 		}
 	}
 }
@@ -158,9 +153,15 @@ void Object::draw()
 		ofSetColor(color);
 	}
 	ofNoFill();
-	ofSetLineWidth(ofMap(mass, 1, 500, 0.1, 10));
+	ofSetLineWidth(ofMap(mass, MINIMUM_MASS, MAXIMUM_MASS, 0.1, 10));
 
 	ofEllipse(pos.x, pos.y, radius, radius);
+
+	ofVec2f velLine = vel;
+	velLine.normalize();
+
+	ofSetLineWidth(0.01);
+	//ofLine(ofVec3f(pos.x, pos.y, 0), ofVec3f(velLine.x * ofGetWidth(), velLine.y * ofGetHeight(), 0));
 
 	ofPopStyle();
 }

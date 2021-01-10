@@ -15,6 +15,7 @@ Springs::Springs(ofVec2f _anchorPos, float _nodeRadius1, float _nodeMass1, float
 	mouseDragAnchor = false;
 
 	isSpring = true;
+	affectedByGravity = true;
 
 	//gravityForce = 0;
 
@@ -112,6 +113,12 @@ void Springs::ellipseCollider()
 
 void Springs::mouseHover()
 {
+	if (mouseOverNode1 || mouseOverNode2 || mouseOverAnchor) {
+		mouseOver = true;
+	}
+	else {
+		mouseOver = false;
+	}
 	if (GameController->MOUSE_BEING_DRAGGED == false) {
 		if (CollisionDetector->EllipseCompare(nodePos1, nodeRadius1, ofVec2f(ofGetMouseX() - ofGetWidth() / 2, ofGetMouseY() - ofGetHeight() / 2), 0)) {
 			mouseOverNode1 = true;
@@ -154,9 +161,9 @@ void Springs::isColliding(GameObject* _other, int _node)
 
 void Springs::gravity()
 {
-	if (GameController->GRAVITY == 1) {
-		nodeVel1 += ofVec2f(0, GRAVITY_FORCE * nodeMass1);
-		nodeVel2 += ofVec2f(0, GRAVITY_FORCE * nodeMass2);
+	if (GameController->GRAVITY == 1 || affectedByGravity) {
+		nodeVel1 += ofVec2f(0, GRAVITY_FORCE * nodeMass1 * 7);
+		nodeVel2 += ofVec2f(0, GRAVITY_FORCE * nodeMass2 * 7);
 	}
 }
 
@@ -198,15 +205,53 @@ void Springs::getNodeColor(int _node)
 			ofSetColor(255, 165, 0);
 		}
 		else {
-			ofSetColor(125);
+			ofSetColor(color);
 		}
 	}
 }
 
 void Springs::update()
 {
-	dragNodes();
 	updateMovementForces();
+	dragNodes();
+	screenBounce();
+}
+
+void Springs::screenBounce()
+{
+	if (nodePos1.x > 0 + (ofGetWidth() / 2) - (nodeRadius1) / 2) {
+		nodeVel1.x *= -1;
+		nodePos1.x = 0 + (ofGetWidth() / 2) - (nodeRadius1) / 2;
+	}
+	if (nodePos1.x < 0 - (ofGetWidth() / 2) + (nodeRadius1) / 2) {
+		nodeVel1.x *= -1;
+		nodePos1.x = 0 - (ofGetWidth() / 2) + (nodeRadius1) / 2;
+	}
+	if (nodePos1.y < 0 - (ofGetHeight() / 2) + (nodeRadius1) / 2) {
+		nodeVel1.y *= -1;
+		nodePos1.y = 0 - (ofGetHeight() / 2) + (nodeRadius1) / 2;
+	}
+	if (nodePos1.y > 0 + (ofGetHeight() / 2) - (nodeRadius1) / 2) {
+		nodeVel1.y *= -1;
+		nodePos1.y = 0 + (ofGetHeight() / 2) - (nodeRadius1) / 2;
+	}
+
+	if (nodePos2.x > 0 + (ofGetWidth() / 2) - (nodeRadius2) / 2) {
+		nodeVel2.x *= -1;
+		nodePos2.x = 0 + (ofGetWidth() / 2) - (nodeRadius2) / 2;
+	}
+	if (nodePos2.x < 0 - (ofGetWidth() / 2) + (nodeRadius2) / 2) {
+		nodeVel2.x *= -1;
+		nodePos2.x = 0 - (ofGetWidth() / 2) + (nodeRadius2) / 2;
+	}
+	if (nodePos2.y < 0 - (ofGetHeight() / 2) + (nodeRadius2) / 2) {
+		nodeVel2.y *= -1;
+		nodePos2.y = 0 - (ofGetHeight() / 2) + (nodeRadius2) / 2;
+	}
+	if (nodePos2.y > 0 + (ofGetHeight() / 2) - (nodeRadius2) / 2) {
+		nodeVel2.y *= -1;
+		nodePos2.y = 0 + (ofGetHeight() / 2) - (nodeRadius2) / 2;
+	}
 }
 
 void Springs::applyForce(ofVec2f _force, int _node)
@@ -272,23 +317,26 @@ void Springs::updateGUI()
 {
 	if (!initiai_values_triggered) {
 		initiai_values_triggered = true;
-		gui_Controller->updateMultipleValues(pos, nodePos1, nodeVel1, nodeAccel1, nodeMass1, nodeRadius1, nodePos2, nodeVel2, nodeAccel2, nodeMass2, nodeRadius2);
+		gui_Controller->updateMultipleValues(pos, nodePos1, nodeVel1, nodeAccel1, nodeMass1, nodeRadius1, nodePos2, nodeVel2, nodeAccel2, nodeMass2, nodeRadius2, k, damping, springmass, affectedByGravity);
 	}
 	else {
-		gui_Controller->updateMultipleValues(pos, nodePos1, nodeVel1, nodeAccel1, gui_Controller->nodeMass1, gui_Controller->nodeRadius1, nodePos2, nodeVel2, nodeAccel2, gui_Controller->nodeMass2, gui_Controller->nodeRadius2);
+		gui_Controller->updateMultipleValues(pos, nodePos1, nodeVel1, nodeAccel1, gui_Controller->nodeMass1, gui_Controller->nodeRadius1, nodePos2, nodeVel2, nodeAccel2, gui_Controller->nodeMass2, gui_Controller->nodeRadius2, gui_Controller->k, gui_Controller->damping, gui_Controller->springmass, gui_Controller->spring_affectedByGravity);
 		nodeMass1 = gui_Controller->nodeMass1;
 		nodeRadius1 = gui_Controller->nodeRadius1;
 		nodeMass2 = gui_Controller->nodeMass2;
 		nodeRadius2 = gui_Controller->nodeRadius2;
+		k = gui_Controller->k;
+		damping = gui_Controller->damping;
+		springmass = gui_Controller->springmass;
+		affectedByGravity = gui_Controller->spring_affectedByGravity;
 	}
-	//mass = gui_Controller->mass;
 }
 
 void Springs::mousePressed(int _x, int _y, int _button)
 {
 	if (!mouse_down_triggered) {
 		mouse_down_triggered = true;
-		if (_button == 2 && (mouseOverNode1 || mouseOverNode2)) {
+		if (_button == 2 && (mouseOverNode1 || mouseOverNode2 || mouseOverAnchor)) {
 			if (GameController->activeObject != this) {
 				initiai_values_triggered = false;
 				GameController->makeActive(this);
@@ -342,7 +390,6 @@ void Springs::draw()
 
 	ofNoFill();
 	ofSetColor(color);
-	ofSetLineWidth(ofMap(mass, 1, 100000, 0.1, 10));
 
 	ofLine(nodePos1.x, nodePos1.y, pos.x, pos.y);
 	ofLine(nodePos2.x, nodePos2.y, nodePos1.x, nodePos1.y);
@@ -355,10 +402,14 @@ void Springs::draw()
 	ofEllipse(nodePos1.x, nodePos1.y, nodeRadius1, nodeRadius1);
 	ofEllipse(nodePos2.x, nodePos2.y, nodeRadius2, nodeRadius2);
 
+	ofSetLineWidth(ofMap(nodeMass1, MINIMUM_MASS, MAXIMUM_MASS, 0.1, 10));
+
 	ofNoFill();
 	getNodeColor(1);
 	ofEllipse(nodePos1.x, nodePos1.y, nodeRadius1, nodeRadius1);	
 	
+	ofSetLineWidth(ofMap(nodeMass2, MINIMUM_MASS, MAXIMUM_MASS, 0.1, 10));
+
 	getNodeColor(2);
 	ofEllipse(nodePos2.x, nodePos2.y, nodeRadius2, nodeRadius2);
 	

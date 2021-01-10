@@ -5,12 +5,6 @@
 #include "guiController.h"
 #include "Collisions.h"
 
-
-#define MAXIMUM_ACCELERATION 0.15 // 0.15
-#define MAXIMUM_VELOCITY 100 // 15
-#define FRICTION_FORCE 0.015
-#define GRAVITY_FORCE 0.01
-
 class GameObject {
 	
 public:
@@ -27,7 +21,10 @@ public:
 
 	virtual void mousePressed(int _x, int _y, int _button);
 	virtual void mouseReleased(int _x, int _y, int _button);
+	
+	void root_keyPressed(int key);
 	virtual void keyPressed(int key);
+	void root_keyReleased(int key);
 	virtual void keyReleased(int key);
 
 	void root_draw();
@@ -44,8 +41,10 @@ public:
 	bool active;
 
 	ofVec2f pos;
+	ofVec2f prevPos;
 	float radius;
 	bool isSpring;
+	bool isPlayer;
 
 protected:
 
@@ -57,6 +56,7 @@ protected:
 	//float radius;
 	float mass;
 	bool infiniteMass;
+	bool affectedByGravity;
 
 	// Modules
 	bool screenWrap_enabled;
@@ -65,11 +65,15 @@ protected:
 	
 	bool mouseHover_enabled;
 
-	virtual void applyForce(ofVec2f _force, bool _limitForce = true);
+	bool deleteKeyDown;
+
 	virtual void screenWrap();
 	virtual void screenBounce();
 	virtual void gravity();
 	virtual void ellipseCollider();
 	virtual void mouseHover();
+	virtual void applyForce(ofVec2f _force, bool _limit = true, float _limitAmount = MAXIMUM_ACCELERATION);
+	virtual void addForces(bool _interpPos);
+	virtual ofVec2f getInterpolatedPosition();
 
 };

@@ -18,8 +18,6 @@ public:
 	ofVec2f getFriction();
 	bool playerCanMove();
 	ofVec2f getMovementVector();
-	void addForces();
-	ofVec2f getInterpolatedPosition();
 	void updateGUI();
 	void resetForces();
 

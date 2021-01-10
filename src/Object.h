@@ -13,7 +13,6 @@ public:
 	void updateForces();
 	ofVec2f applyAllForces();
 	ofVec2f getFriction();
-	void addForces();
 	void updateGUI();
 	void dragNodes();
 	void resetForces();
