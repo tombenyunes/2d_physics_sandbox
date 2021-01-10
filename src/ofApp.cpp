@@ -8,23 +8,11 @@ void ofApp::setup()
 
 	GameObject* player = new Player;
 	GameObjects->push_back(player);
-
-	//GameObject* spring = new Spring(ofVec2f(0, 0), 0.8, 0.2, 0.92, 150);
-	//GameObjects->push_back(spring);
-	//for (int i = 0; i < 2; i++) {
-		//GameObject* object = new Object(ofVec2f(ofRandom(-ofGetWidth() / 2, ofGetWidth() / 2), ofRandom(-ofGetHeight() / 2, ofGetHeight() / 2)), ofRandom(1, 250), ofRandom(10, 300));
-		//GameObjects->push_back(object);
-	//}
-	
-	//GameObject* spring1 = new Springs(ofVec2f(-100, 0), 35, 22, 35, 22, 2, 2, 22);
-	//GameObject* spring2 = new Springs(ofVec2f(100, 0), 35, 22, 35, 22, 2, 2, 22);
-	//GameObjects->push_back(spring1);
-	//GameObjects->push_back(spring2);
 }
 
 void ofApp::update()
 {
-	// erase objects that need to be deleted
+	// erase objects that need to be deleted and free memory
 	for (int i = 0; i < GameObjects->size(); i++) {
 		if ((*GameObjects)[i]->needs_to_be_deleted == true) {
 			if ((*GameObjects)[i] == GameController->getActive()) {
@@ -133,7 +121,6 @@ void ofApp::mouseDragged(int x, int y, int button)
 {
 	if (GameController->getCanUserInput()) {
 		for (int i = 0; i < GameObjects->size(); i++) {
-			//(*GameObjects)[i]->mousePressed(x - ofGetWidth() / 2, y - ofGetHeight() / 2, button);
 			(*GameObjects)[i]->mouseDragged(x - ofGetWidth() / 2, y - ofGetHeight() / 2, button);
 		}
 		if (button == 1) {
