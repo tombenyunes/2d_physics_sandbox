@@ -3,7 +3,7 @@
 Springs::Springs(ofVec2f _anchorPos, float _nodeRadius1, float _nodeMass1, float _nodeRadius2, float _nodeMass2, float _k, float _damping, float _springmass, Controller* _controller)
 {
 	GameController = _controller;
-	
+
 	color = ofColor(255);
 
 	mouse_down_triggered = false;
@@ -25,7 +25,7 @@ Springs::Springs(ofVec2f _anchorPos, float _nodeRadius1, float _nodeMass1, float
 	pos = _anchorPos;
 	radius = 8;
 	timeStep = 0.28;
-	
+
 	nodePos1.set(pos);
 	nodeVel1.set(0);
 	nodeAccel1.set(0);
@@ -108,7 +108,7 @@ ofVec2f Springs::updateSprings(int _node) {
 	// Mass 2 Net Force
 	ofVec2f mass2Force;
 	mass2Force.x = mass2SpringForce.x - mass2DampingForce.x;
-	mass2Force.y = mass2SpringForce.y + springmass - 
+	mass2Force.y = mass2SpringForce.y + springmass -
 		mass2DampingForce.y;
 
 	if (_node == 1) {
@@ -368,7 +368,7 @@ void Springs::draw()
 
 	ofLine(nodePos1.x, nodePos1.y, pos.x, pos.y);
 	ofLine(nodePos2.x, nodePos2.y, nodePos1.x, nodePos1.y);
-	
+
 	ofFill();
 	getNodeColor(-1);
 	ofEllipse(pos.x, pos.y, radius, radius);
@@ -377,17 +377,17 @@ void Springs::draw()
 	ofEllipse(nodePos1.x, nodePos1.y, nodeRadius1, nodeRadius1);
 	ofEllipse(nodePos2.x, nodePos2.y, nodeRadius2, nodeRadius2);
 
-	ofSetLineWidth(ofMap(nodeMass1, MINIMUM_MASS, MAXIMUM_MASS/2, 0.1, 10));
+	ofSetLineWidth(ofMap(nodeMass1, MINIMUM_MASS, MAXIMUM_MASS / 2, 0.1, 10));
 
 	ofNoFill();
 	getNodeColor(1);
-	ofEllipse(nodePos1.x, nodePos1.y, nodeRadius1, nodeRadius1);	
-	
-	ofSetLineWidth(ofMap(nodeMass2, MINIMUM_MASS, MAXIMUM_MASS/2, 0.1, 10));
+	ofEllipse(nodePos1.x, nodePos1.y, nodeRadius1, nodeRadius1);
+
+	ofSetLineWidth(ofMap(nodeMass2, MINIMUM_MASS, MAXIMUM_MASS / 2, 0.1, 10));
 
 	getNodeColor(2);
 	ofEllipse(nodePos2.x, nodePos2.y, nodeRadius2, nodeRadius2);
-	
+
 	ofPopStyle();
 }
 

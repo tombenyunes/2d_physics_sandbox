@@ -21,7 +21,7 @@ public:
 	void draw() override;
 
 private:
-	
+
 	void updateForces();
 	void applyAllForces();
 
@@ -40,7 +40,7 @@ private:
 	bool mouse_down;
 	int mouse_button;
 	ofVec2f mouse_pos;
-	
+
 	bool aimingBoost;
 
 };

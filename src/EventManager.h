@@ -9,7 +9,7 @@ class EventManager
 {
 
 public:
-	
+
 	void setup();
 	void update(Controller* _controller, vector<GameObject*>* _gameobjects);
 	void draw();

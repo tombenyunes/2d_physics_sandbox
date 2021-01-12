@@ -108,11 +108,11 @@ void Object::mousePressed(int _x, int _y, int _button)
 void Object::mouseDragged(int _x, int _y, int _button)
 {
 	if (_button == 2) {
-		if (mouseOver && GameController->getMouseDragged() == false) {			
+		if (mouseOver && GameController->getMouseDragged() == false) {
 			if (posBeforeDrag.distance(ofVec2f(ofGetMouseX() / 2 - ofGetWidth() / 2, ofGetMouseY() - ofGetHeight() / 2)) > 2) {
 				// the node will only be moved by the mouse if it has been moved by more than 1 pixel - this prevents accidentally stopping something by selecting it
 				mouseDrag = true;
-				GameController->setMouseDragged(true);				
+				GameController->setMouseDragged(true);
 			}
 		}
 	}
@@ -140,7 +140,7 @@ void Object::draw()
 	ofPushStyle();
 
 	if (infiniteMass) {
-	ofSetColor(255, 0, 0);
+		ofSetColor(255, 0, 0);
 	}
 	else if (GameController->getActive() == this) {
 		ofSetColor(255, 165, 0);
