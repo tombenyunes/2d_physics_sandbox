@@ -22,7 +22,7 @@ public:
 	Controller* GameController;
 
 	// ----- Panels ----- //
-
+	
 	ofxPanel world_gui;
 	ofxPanel player_gui;
 	ofxPanel selected_gui;
