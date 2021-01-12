@@ -53,11 +53,11 @@ bool Controller::getMouseDragged()
 {
 	return MOUSE_BEING_DRAGGED;
 }
-void Controller::setNewNodeName(bool _value)
+void Controller::setNewNodeType(bool _value)
 {
 	(_value == 1) ? NEW_NODE_NAME = 1 : NEW_NODE_NAME = 0;
 }
-int Controller::getNewNodeName()
+int Controller::getNewNodeType()
 {
 	return NEW_NODE_NAME;
 }

@@ -10,18 +10,10 @@ public:
 	Springs(ofVec2f _anchorPos, float _nodeRadius1, float _nodeMass1, float _nodeRadius2, float _nodeMass2, float _k, float _damping, float _springmass, Controller* _controller);
 
 	void update() override;
-	void updateForces();
-	void applyAllForces(int _node);
-	ofVec2f updateSprings(int _node);
-	ofVec2f applyFriction(int _node);
-	void addForces();	
-	void updateGUI();
-	void resetForces();
 
 	void screenBounce() override;
 	void gravity() override;
 	void mouseHover() override;
-	void dragNodes();
 	void ellipseCollider() override;
 	void isColliding(GameObject* _other, int _node);
 
@@ -30,12 +22,35 @@ public:
 
 	void mousePressed(int _x, int _y, int _button) override;
 	void mouseReleased(int _x, int _y, int _button) override;	
-	
+
+
+private:
+
+	void updateForces();
+	void applyAllForces(int _node);
+	ofVec2f updateSprings(int _node);
+	ofVec2f applyFriction(int _node);
+	void addForces();
+
+	void dragNodes();
+
+	void updateGUI();
+	void resetForces();
+
 	float k;
 	float damping;
 	float springmass;
 	float timeStep;
-	
+
+	bool mouse_down_triggered;
+	bool initiai_values_triggered;
+	bool mouseOverNode1;
+	bool mouseOverNode2;
+	bool mouseOverAnchor;
+	bool mouseDragNode1;
+	bool mouseDragNode2;
+	bool mouseDragAnchor;
+
 	ofVec2f nodePos1;
 	ofVec2f nodeVel1;
 	ofVec2f nodeAccel1;
@@ -48,13 +63,5 @@ public:
 	float nodeRadius2;
 	float nodeMass2;
 
-	bool mouse_down_triggered;
-	bool initiai_values_triggered;
-	bool mouseOverNode1;
-	bool mouseOverNode2;
-	bool mouseOverAnchor;
-	bool mouseDragNode1;
-	bool mouseDragNode2;
-	bool mouseDragAnchor;
 
 };

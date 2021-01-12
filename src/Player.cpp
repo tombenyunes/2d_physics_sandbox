@@ -11,16 +11,15 @@ Player::Player(ofVec2f _pos, ofColor _color)
 	mass = 500;
 
 	isPlayer = true;
-
 	mouse_down = false;
-	mouse_button = -1;
-	
+	mouse_button = -1;	
 	aimingBoost = false;
 
-
+	// modules are updated automatically
 	AddModule("screenBounce");
-	AddModule("gravity");
 	AddModule("ellipseCollider");
+	AddModule("gravity");
+	AddModule("friction");
 }
 
 void Player::update()
@@ -38,15 +37,7 @@ void Player::updateForces()
 
 void Player::applyAllForces()
 {
-	applyForce(accel, getFriction());
 	if (playerCanMove()) applyForce(accel, getMovementVector(), true, 0.15);
-}
-
-ofVec2f Player::getFriction()
-{
-	ofVec2f friction = vel * -1;
-	friction *= FRICTION_FORCE;
-	return friction;
 }
 
 bool Player::playerCanMove()
@@ -68,19 +59,14 @@ ofVec2f Player::getMovementVector()
 
 void Player::updateGUI()
 {
-	static bool initiai_values_triggered = false;
+	static bool initiai_values_triggered = false; // initial values are sent to the gui_manager initially, after which it will update the results internally, and the object can receive the values back
 	if (!initiai_values_triggered) {
 		initiai_values_triggered = true;
 		gui_Controller->updateValues(pos, vel, accel, mass, infiniteMass, radius, affectedByGravity, 1);
 	}
 	else {
-		gui_Controller->updateValues(pos, vel, accel, gui_Controller->mass, gui_Controller->infiniteMass, gui_Controller->radius, gui_Controller->affectedByGravity, 1);
-		if (infiniteMass) {
-			mass = 9999999999999999999;
-		}
-		else {
-			mass = gui_Controller->mass;
-		}
+		gui_Controller->updateValues(pos, vel, accel, gui_Controller->mass, gui_Controller->infiniteMass, gui_Controller->radius, gui_Controller->affectedByGravity, 1); // receiving and updating the results from the gui_controller
+		if (infiniteMass) mass = 9999999999999999999; else mass = gui_Controller->mass;
 		radius = gui_Controller->radius;
 		infiniteMass = gui_Controller->infiniteMass;
 		affectedByGravity = gui_Controller->affectedByGravity;
@@ -153,33 +139,28 @@ void Player::draw()
 {
 	ofSetColor(255);
 
-	if (aimingBoost) {
-		ofPushMatrix();
-
-		glEnable(GL_LINE_STIPPLE);
-		glLineStipple(8, 0xAAAA);
-		glBegin(GL_LINES);
-		glVertex3f(pos.x, pos.y, 0);		
-		glVertex3f(drawVelPath().x, drawVelPath().y, drawVelPath().z);
-		glEnd();
-		glDisable(GL_LINE_STIPPLE);
-		glFlush();
-		
-		ofPopMatrix();
-	}
-
+	if (aimingBoost) drawBoostDirection();
 	drawParticleTrail();
 
 	ofSetColor(color);
 	ofFill();
-	//float mult = (ofMap(vel.length(), 0, 15, 1, 0.25));
-	ofEllipse(pos.x, pos.y, radius /** mult*/, radius /** mult*/);
+	ofEllipse(pos.x, pos.y, radius, radius);
+}
 
-	ofVec2f velLine = vel;
-	velLine.normalize();
+void Player::drawBoostDirection() // draws dotted line in the direction the player is aiming
+{
+	ofPushMatrix();
 
-	ofSetLineWidth(0.01);
-	//ofLine(ofVec3f(pos.x, pos.y, 0), ofVec3f(velLine.x * ofGetWidth(), velLine.y * ofGetHeight(), 0));
+	glEnable(GL_LINE_STIPPLE);
+	glLineStipple(8, 0xAAAA);
+	glBegin(GL_LINES);
+	glVertex3f(pos.x, pos.y, 0);
+	glVertex3f(drawVelPath().x, drawVelPath().y, drawVelPath().z);
+	glEnd();
+	glDisable(GL_LINE_STIPPLE);
+	glFlush();
+
+	ofPopMatrix();
 }
 
 ofVec3f Player::drawVelPath()
@@ -188,7 +169,7 @@ ofVec3f Player::drawVelPath()
 	return ofVec3f(vec.x * ofGetWidth(), vec.y * ofGetHeight(), 0);
 }
 
-void Player::drawParticleTrail()
+void Player::drawParticleTrail() // draws particle trail following the player when moving
 {
 	if (mouse_down && mouse_button == 0) {
 		GameObject* particle = new Particle{ pos /*+ ofRandom(-radius/3, radius/3)*/, getMovementVector() * -1, 4, ofColor(255), 255 };

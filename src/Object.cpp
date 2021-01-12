@@ -15,58 +15,24 @@ Object::Object(ofVec2f _pos, float _mass, float _radius, Controller* _controller
 	mouseDrag = false;
 
 	AddModule("screenBounce");
-	AddModule("gravity");
 	AddModule("ellipseCollider");
+	AddModule("gravity");
+	AddModule("friction");
 	AddModule("mouseHover");
 }
 
 void Object::update()
 {
-	prevMousePos.set(ofGetMouseX() / 2 - ofGetWidth() / 2, ofGetMouseY() - ofGetHeight() / 2);
+	posBeforeDrag.set(ofGetMouseX() / 2 - ofGetWidth() / 2, ofGetMouseY() - ofGetHeight() / 2);
 	updateForces();
-	updateGUI();
 	dragNodes();
+	updateGUI();
 	resetForces();
 }
 
 void Object::updateForces()
 {
-	applyAllForces();
 	addForces(false);
-}
-
-void Object::applyAllForces()
-{
-	applyForce(accel, getFriction());
-}
-
-ofVec2f Object::getFriction()
-{
-	ofVec2f friction = vel * -1;
-	friction *= FRICTION_FORCE;
-	return friction;
-}
-
-void Object::updateGUI()
-{
-	if (GameController->getActive() == this) {
-		if (!initiai_values_triggered) {
-			initiai_values_triggered = true;
-			gui_Controller->updateValues(pos, vel, accel, mass, infiniteMass, radius, affectedByGravity, 2);
-		}
-		else {
-			gui_Controller->updateValues(pos, vel, accel, gui_Controller->selected_mass, gui_Controller->selected_infiniteMass, gui_Controller->selected_radius, gui_Controller->selected_affectedByGravity, 2);
-			if (infiniteMass) {
-				mass = 999999999999;
-			}
-			else {
-				mass = gui_Controller->selected_mass;
-			}
-			radius = gui_Controller->selected_radius;
-			infiniteMass = gui_Controller->selected_infiniteMass;
-			affectedByGravity = gui_Controller->selected_affectedByGravity;
-		}
-	}
 }
 
 void Object::dragNodes()
@@ -91,6 +57,28 @@ void Object::dragNodes()
 			startedDragging = false;
 			ofVec2f mousespeed = (ofVec2f(ofGetMouseX() - ofGetWidth() / 2, ofGetMouseY() - ofGetHeight() / 2) - mousePosBeforeDrag) / 3;
 			applyForce(accel, mousespeed, false);
+		}
+	}
+}
+
+void Object::updateGUI()
+{
+	if (GameController->getActive() == this) {
+		if (!initiai_values_triggered) {
+			initiai_values_triggered = true;
+			gui_Controller->updateValues(pos, vel, accel, mass, infiniteMass, radius, affectedByGravity, 2);
+		}
+		else {
+			gui_Controller->updateValues(pos, vel, accel, gui_Controller->selected_mass, gui_Controller->selected_infiniteMass, gui_Controller->selected_radius, gui_Controller->selected_affectedByGravity, 2);
+			if (infiniteMass) {
+				mass = 999999999999;
+			}
+			else {
+				mass = gui_Controller->selected_mass;
+			}
+			radius = gui_Controller->selected_radius;
+			infiniteMass = gui_Controller->selected_infiniteMass;
+			affectedByGravity = gui_Controller->selected_affectedByGravity;
 		}
 	}
 }
@@ -121,7 +109,7 @@ void Object::mouseDragged(int _x, int _y, int _button)
 {
 	if (_button == 2) {
 		if (mouseOver && GameController->getMouseDragged() == false) {			
-			if (prevMousePos.distance(ofVec2f(ofGetMouseX() / 2 - ofGetWidth() / 2, ofGetMouseY() - ofGetHeight() / 2)) > 2) {
+			if (posBeforeDrag.distance(ofVec2f(ofGetMouseX() / 2 - ofGetWidth() / 2, ofGetMouseY() - ofGetHeight() / 2)) > 2) {
 				// the node will only be moved by the mouse if it has been moved by more than 1 pixel - this prevents accidentally stopping something by selecting it
 				mouseDrag = true;
 				GameController->setMouseDragged(true);				
@@ -164,12 +152,6 @@ void Object::draw()
 	ofSetLineWidth(ofMap(mass, MINIMUM_MASS, MAXIMUM_MASS, 0.1, 10));
 
 	ofEllipse(pos.x, pos.y, radius, radius);
-
-	ofVec2f velLine = vel;
-	velLine.normalize();
-
-	ofSetLineWidth(0.01);
-	//ofLine(ofVec3f(pos.x, pos.y, 0), ofVec3f(velLine.x * ofGetWidth(), velLine.y * ofGetHeight(), 0));
 
 	ofPopStyle();
 }

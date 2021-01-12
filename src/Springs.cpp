@@ -38,17 +38,17 @@ Springs::Springs(ofVec2f _anchorPos, float _nodeRadius1, float _nodeMass1, float
 	nodeRadius2 = _nodeRadius2;
 	nodeMass2 = _nodeMass2;
 
+	// seeing as each spring system contains multiple positions, velocities, etc, the below modules must be overriden to account for this
 	AddModule("screenBounce");
 	AddModule("ellipseCollider");
-	AddModule("mouseHover");
 	AddModule("gravity");
+	AddModule("mouseHover");
 }
 
 void Springs::update()
 {
 	updateForces();
 	dragNodes();
-
 	updateGUI();
 	resetForces();
 }
@@ -119,29 +119,19 @@ ofVec2f Springs::updateSprings(int _node) {
 	}
 };
 
-ofVec2f Springs::applyFriction(int _node)
+void Springs::dragNodes()
 {
-	ofVec2f friction;
-	if (_node == 1) {
-		friction = nodeVel1 * -1;
-		friction *= FRICTION_FORCE;
-		return friction;
+	if (mouseDragNode1) {
+		nodePos1.set(ofVec2f(ofGetMouseX() - ofGetWidth() / 2, ofGetMouseY() - ofGetHeight() / 2) + mouseOffsetFromCenter);
+		nodeVel1.set(0);
 	}
-	else if (_node == 2) {
-		friction = nodeVel2 * -1;
-		friction *= FRICTION_FORCE;
-		return friction;
+	else if (mouseDragNode2) {
+		nodePos2.set(ofVec2f(ofGetMouseX() - ofGetWidth() / 2, ofGetMouseY() - ofGetHeight() / 2) + mouseOffsetFromCenter);
+		nodeVel2.set(0);
 	}
-}
-
-void Springs::addForces()
-{
-	nodeVel1 += nodeAccel1;
-	nodeVel2 += nodeAccel2;
-	//nodeVel1.limit(MAXIMUM_VELOCITY);
-	nodePos1 += nodeVel1 * timeStep;
-	//nodeVel2.limit(MAXIMUM_VELOCITY);
-	nodePos2 += nodeVel2 * timeStep;
+	else if (mouseDragAnchor) {
+		pos.set(ofGetMouseX() - ofGetWidth() / 2, ofGetMouseY() - ofGetHeight() / 2);
+	}
 }
 
 void Springs::updateGUI()
@@ -172,7 +162,73 @@ void Springs::resetForces()
 }
 
 
-// overriden modules // updated prior to everything else
+// seeing as the spring contains 3 separate nodes, and thus 3 separate positions, velocities, mass, etc, the class must override a lot of the functions that the player and standard node uses
+// overriden modules below
+
+
+void Springs::addForces()
+{
+	nodeVel1 += nodeAccel1;
+	nodeVel2 += nodeAccel2;
+	nodePos1 += nodeVel1 * timeStep;
+	nodePos2 += nodeVel2 * timeStep;
+}
+
+void Springs::gravity()
+{
+	if (GameController->getGravity() == 1 || affectedByGravity) {
+		ofVec2f gravity1 = { 0, (float)GRAVITY_FORCE * 400 * nodeMass1 };
+		ofVec2f gravity2 = { 0, (float)GRAVITY_FORCE * 400 * nodeMass2 };
+		applyForce(nodeAccel1, gravity1, false);
+		applyForce(nodeAccel2, gravity2, false);
+	}
+}
+
+ofVec2f Springs::applyFriction(int _node)
+{
+	ofVec2f friction;
+	if (_node == 1) {
+		friction = nodeVel1 * -1;
+		friction *= FRICTION_FORCE;
+		return friction;
+	}
+	else if (_node == 2) {
+		friction = nodeVel2 * -1;
+		friction *= FRICTION_FORCE;
+		return friction;
+	}
+}
+
+void Springs::ellipseCollider()
+{
+	for (int i = 0; i < GameObjects->size(); i++) {
+		if ((*GameObjects)[i]->ellipseCollider_enabled) {
+			if ((*GameObjects)[i] != this && (*GameObjects)[i]->isSpring != true) {
+				if (CollisionDetector.EllipseCompare(nodePos1, nodeRadius1, (*GameObjects)[i]->pos, (*GameObjects)[i]->radius)) {
+					isColliding((*GameObjects)[i], 1);
+					(*GameObjects)[i]->isColliding(this, nodePos1);
+				}
+				if (CollisionDetector.EllipseCompare(nodePos2, nodeRadius2, (*GameObjects)[i]->pos, (*GameObjects)[i]->radius)) {
+					isColliding((*GameObjects)[i], 2);
+					(*GameObjects)[i]->isColliding(this, nodePos2);
+				}
+			}
+		}
+	}
+}
+void Springs::isColliding(GameObject* _other, int _node)
+{
+	if (_node == 1) {
+		ofVec2f forceVec = nodePos1 - _other->pos;
+		ofVec2f accel = forceVec / nodeMass1;
+		applyForce(nodeAccel1, accel, false);
+	}
+	else if (_node == 2) {
+		ofVec2f forceVec = nodePos2 - _other->pos;
+		ofVec2f accel = forceVec / nodeMass2;
+		applyForce(nodeAccel2, accel, false);
+	}
+}
 
 void Springs::screenBounce()
 {
@@ -211,16 +267,6 @@ void Springs::screenBounce()
 	}
 }
 
-void Springs::gravity()
-{
-	if (GameController->getGravity() == 1 || affectedByGravity) {
-		ofVec2f gravity1 = { 0, (float)GRAVITY_FORCE * 400 * nodeMass1 };
-		applyForce(nodeAccel1, gravity1, false);
-		ofVec2f gravity2 = { 0, (float)GRAVITY_FORCE * 400 * nodeMass2 };
-		applyForce(nodeAccel2, gravity2, false);
-	}
-}
-
 void Springs::mouseHover()
 {
 	if (mouseOverNode1 || mouseOverNode2 || mouseOverAnchor) {
@@ -230,15 +276,15 @@ void Springs::mouseHover()
 		mouseOver = false;
 	}
 	if (GameController->getMouseDragged() == false) {
-		if (CollisionDetector->EllipseCompare(nodePos1, nodeRadius1, ofVec2f(ofGetMouseX() - ofGetWidth() / 2, ofGetMouseY() - ofGetHeight() / 2), 0)) {
+		if (CollisionDetector.EllipseCompare(nodePos1, nodeRadius1, ofVec2f(ofGetMouseX() - ofGetWidth() / 2, ofGetMouseY() - ofGetHeight() / 2), 0)) {
 			mouseOverNode1 = true;
 			mouseOffsetFromCenter = nodePos1 - ofVec2f(ofGetMouseX() - ofGetWidth() / 2, ofGetMouseY() - ofGetHeight() / 2);
 		}
-		else if (CollisionDetector->EllipseCompare(nodePos2, nodeRadius2, ofVec2f(ofGetMouseX() - ofGetWidth() / 2, ofGetMouseY() - ofGetHeight() / 2), 0)) {
+		else if (CollisionDetector.EllipseCompare(nodePos2, nodeRadius2, ofVec2f(ofGetMouseX() - ofGetWidth() / 2, ofGetMouseY() - ofGetHeight() / 2), 0)) {
 			mouseOverNode2 = true;
 			mouseOffsetFromCenter = nodePos2 - ofVec2f(ofGetMouseX() - ofGetWidth() / 2, ofGetMouseY() - ofGetHeight() / 2);
 		}
-		else if (CollisionDetector->EllipseCompare(pos, radius, ofVec2f(ofGetMouseX() - ofGetWidth() / 2, ofGetMouseY() - ofGetHeight() / 2), 0)) {
+		else if (CollisionDetector.EllipseCompare(pos, radius, ofVec2f(ofGetMouseX() - ofGetWidth() / 2, ofGetMouseY() - ofGetHeight() / 2), 0)) {
 			mouseOverAnchor = true;
 			mouseOffsetFromCenter = pos - ofVec2f(ofGetMouseX() - ofGetWidth() / 2, ofGetMouseY() - ofGetHeight() / 2);
 		}
@@ -250,55 +296,6 @@ void Springs::mouseHover()
 
 			mouseOffsetFromCenter.set(0);
 		}
-	}
-}
-
-void Springs::dragNodes()
-{
-	if (mouseDragNode1) {
-		nodePos1.set(ofVec2f(ofGetMouseX() - ofGetWidth() / 2, ofGetMouseY() - ofGetHeight() / 2) + mouseOffsetFromCenter);
-		nodeVel1.set(0);
-	}
-	else if (mouseDragNode2) {
-		nodePos2.set(ofVec2f(ofGetMouseX() - ofGetWidth() / 2, ofGetMouseY() - ofGetHeight() / 2) + mouseOffsetFromCenter);
-		nodeVel2.set(0);
-	}
-	else if (mouseDragAnchor) {
-		pos.set(ofGetMouseX() - ofGetWidth() / 2, ofGetMouseY() - ofGetHeight() / 2);
-	}
-}
-
-void Springs::ellipseCollider()
-{
-	for (int i = 0; i < GameObjects->size(); i++) {
-		if ((*GameObjects)[i]->ellipseCollider_enabled) {
-			if ((*GameObjects)[i] != this && (*GameObjects)[i]->isSpring != true) {
-				if (CollisionDetector->EllipseCompare(nodePos1, nodeRadius1, (*GameObjects)[i]->pos, (*GameObjects)[i]->radius)) {
-					isColliding((*GameObjects)[i], 1);
-					(*GameObjects)[i]->isColliding(this, nodePos1);
-				}
-				if (CollisionDetector->EllipseCompare(nodePos2, nodeRadius2, (*GameObjects)[i]->pos, (*GameObjects)[i]->radius)) {
-					isColliding((*GameObjects)[i], 2);
-					(*GameObjects)[i]->isColliding(this, nodePos2);
-				}
-			}
-		}
-	}
-}
-
-void Springs::isColliding(GameObject* _other, int _node)
-{
-	if (_node == 1) {
-		ofVec2f forceVec = nodePos1 - _other->pos;
-		ofVec2f accel = forceVec / nodeMass1;
-		//nodeVel1 += accel;
-		applyForce(nodeAccel1, accel, false);
-	}
-	else if (_node == 2) {
-		ofVec2f forceVec = nodePos2 - _other->pos;
-		ofVec2f accel = forceVec / nodeMass2;
-		//nodeVel2 += accel;
-		applyForce(nodeAccel2, accel, false);
 	}
 }
 

@@ -16,8 +16,8 @@ GameObject::GameObject(ofVec2f _pos, ofColor _color)
 	needs_to_be_deleted = false;
 	mouseOver = false;
 	mouseOffsetFromCenter.set(0);
-	active = false;
 
+	isPlayer = false;
 	isSpring = false;
 
 	deleteKeyDown = false;
@@ -25,11 +25,13 @@ GameObject::GameObject(ofVec2f _pos, ofColor _color)
 	screenWrap_enabled = false;
 	screenBounce_enabled = false;
 	gravity_enabled = false;
+	friction_enabled = false;
 	ellipseCollider_enabled = false;
 	mouseHover_enabled = false;
 }
 
-void GameObject::root_update(vector<GameObject*>* _gameobjects, Controller* _controller, guiController* _guiController, Collisions* _collisionDetector)
+// root update is called prir to the main update function of a gameobject and is responsible for handling object deletion and updating user-added modules - it automatically updates the main update funcion
+void GameObject::root_update(vector<GameObject*>* _gameobjects, Controller* _controller, guiController* _guiController)
 {
 	if (deleteKeyDown) {
 		if (mouseOver) {
@@ -41,7 +43,6 @@ void GameObject::root_update(vector<GameObject*>* _gameobjects, Controller* _con
 		GameObjects = _gameobjects;
 		GameController = _controller;
 		gui_Controller = _guiController;
-		CollisionDetector = _collisionDetector;
 
 		if (screenWrap_enabled) {
 			screenWrap();
@@ -52,6 +53,9 @@ void GameObject::root_update(vector<GameObject*>* _gameobjects, Controller* _con
 		if (gravity_enabled) {
 			gravity();
 		}
+		if (friction_enabled) {
+			friction();
+		}
 		if (ellipseCollider_enabled) {
 			ellipseCollider();
 		}
@@ -60,10 +64,11 @@ void GameObject::root_update(vector<GameObject*>* _gameobjects, Controller* _con
 		}
 
 		prevPos = pos;
-		update();
+
+		update(); // <--- user defined update function for every gameobject
 	}
-	else {
-		//cout << "Error: 'Dead' GameObject is still being updated" << endl;
+	else {		
+		cout << "Error: 'Dead' GameObject is still being updated" << endl;
 	}
 }
 
@@ -72,13 +77,43 @@ void GameObject::update()
 	static bool initialized = false;
 	if (!initialized)
 	{
-		cout << "Error: User hasn't defined unique 'update' function for a GameObject" << endl;
+		//cout << "Error: User hasn't defined unique 'update' function for a GameObject" << endl;
 		initialized = true;
 	}
 }
 
 // ----- MODULES ----- //
 
+// I made the module system to be an easy way to share functions to only the objects that need them
+
+// Simply including `AddModule("module-name")` to the constructor of a new gameobject will cause this module to be updated
+
+void GameObject::AddModule(string _id)
+{
+	if (_id == "screenWrap") {
+		screenWrap_enabled = true;
+	}
+	else if (_id == "screenBounce") {
+		screenBounce_enabled = true;
+	}
+	else if (_id == "gravity") {
+		gravity_enabled = true;
+	}
+	else if (_id == "friction") {
+		friction_enabled = true;
+	}
+	else if (_id == "ellipseCollider") {
+		ellipseCollider_enabled = true;
+	}
+	else if (_id == "mouseHover") {
+		mouseHover_enabled = true;
+	}
+	else {
+		cout << "Error: Module ID is invalid" << endl;
+	}
+}
+
+// upon reaching the screen edge, the object is placed at the opposite edge
 void GameObject::screenWrap()
 {
 	if (pos.x > 0 + (ofGetWidth() / 2)) {
@@ -95,6 +130,7 @@ void GameObject::screenWrap()
 	}
 }
 
+// object 'bounce' when hitting the screen edge
 void GameObject::screenBounce()
 {
 	if (pos.x > 0 + (ofGetWidth() / 2) - (radius) / 2) {
@@ -115,21 +151,14 @@ void GameObject::screenBounce()
 	}
 }
 
-void GameObject::gravity()
-{
-	if (GameController->getGravity() == 1 || affectedByGravity) {
-		ofVec2f gravity = { 0, (float)GRAVITY_FORCE * mass };
-		applyForce(accel, gravity, false);
-	}
-}
-
+// simple ellipse collision detection
 void GameObject::ellipseCollider()
 {
 	for (int i = 0; i < GameObjects->size(); i++) {
 		if ((*GameObjects)[i]->ellipseCollider_enabled) {
 			if ((*GameObjects)[i] != this) {
 				if ((*GameObjects)[i]->isSpring == false) {
-					if (CollisionDetector->EllipseCompare(pos, radius, (*GameObjects)[i]->pos, (*GameObjects)[i]->radius)) {
+					if (CollisionDetector.EllipseCompare(pos, radius, (*GameObjects)[i]->pos, (*GameObjects)[i]->radius)) {
 						isColliding((*GameObjects)[i]);
 					}
 				}
@@ -137,11 +166,11 @@ void GameObject::ellipseCollider()
 		}
 	}
 }
-
+// called when an object is currently colliding
 void GameObject::isColliding(GameObject* _other, ofVec2f _nodePos)
 {
 	ofVec2f otherPos;
-	if (_other->isSpring) {		
+	if (_other->isSpring) {
 		otherPos = _nodePos;
 	}
 	else {
@@ -160,9 +189,25 @@ void GameObject::isColliding(GameObject* _other, ofVec2f _nodePos)
 	}
 }
 
+void GameObject::gravity()
+{
+	if (GameController->getGravity() == 1 || affectedByGravity) {
+		ofVec2f gravity = { 0, (float)GRAVITY_FORCE * mass };
+		applyForce(accel, gravity, false);
+	}
+}
+
+void GameObject::friction()
+{
+	ofVec2f friction = vel * -1;
+	friction *= FRICTION_FORCE;
+	applyForce(accel, friction, true);
+}
+
+// determines if the mouse is over an object
 void GameObject::mouseHover()
 {
-	if (CollisionDetector->EllipseCompare(pos, radius, ofVec2f(ofGetMouseX()-ofGetWidth()/2, ofGetMouseY()-ofGetHeight()/2), 0)) {
+	if (CollisionDetector.EllipseCompare(pos, radius, ofVec2f(ofGetMouseX()-ofGetWidth()/2, ofGetMouseY()-ofGetHeight()/2), 0)) {
 		if (GameController->getMouseDragged() == false) {
 			color = ofColor(255, 165, 0);
 			mouseOver = true;
@@ -176,37 +221,14 @@ void GameObject::mouseHover()
 	}
 }
 
-void GameObject::AddModule(string _id)
-{
-	if (_id == "screenWrap") {
-		//cout << "screenWrap module added" << endl;
-		screenWrap_enabled = true;
-	}
-	else if (_id == "screenBounce") {
-		//cout << "screenBounce module added" << endl;
-		screenBounce_enabled = true;
-	}
-	else if (_id == "gravity") {
-		//cout << "gravity module added" << endl;
-		gravity_enabled = true;
-	}
-	else if (_id == "ellipseCollider") {
-		//cout << "gravity module added" << endl;
-		ellipseCollider_enabled = true;
-	}
-	else if (_id == "mouseHover") {
-		//cout << "gravity module added" << endl;
-		mouseHover_enabled = true;
-	}
-	else {
-		cout << "Error: Module ID is invalid" << endl;
-	}
-}
+
+// Shared physics functions
+
 
 void GameObject::applyForce(ofVec2f& _accel, ofVec2f _force, bool _limit, float _limitAmount)
 {
 	if (_limit) {
-		_force.limit(_limitAmount); // default MAXIMUM_ACCELERATION
+		_force.limit(_limitAmount);
 		_accel += _force;
 	}
 	else {
@@ -229,17 +251,10 @@ void GameObject::addForces(bool _interpPos)
 
 ofVec2f GameObject::getInterpolatedPosition()
 {
-	//ofVec2f newPos;
-	//newPos.x = ofLerp(pos.x, pos.x + vel.x, 0.75);
-	//newPos.y = ofLerp(pos.y, pos.y + vel.y, 0.75);
-	//return newPos;
-
 	int progress = (ofGetFrameNum() % 100) / 100;
 	ofVec2f powInterpIn;
 	powInterpIn.x = ofNextPow2(progress);
 	powInterpIn.y = ofNextPow2(progress);
-
-	float sinInterp = sin(progress * (PI / 2));
 
 	ofVec2f newPos;
 	newPos.x = ofLerp(pos.x, pos.x + vel.x, powInterpIn.x);
@@ -251,6 +266,7 @@ ofVec2f GameObject::getInterpolatedPosition()
 // ----- EVENT FUNCTIONS ----- //
 
 
+// it is necessary for these functions to be declared here, as they are called on every gameobject
 void GameObject::mousePressed(int _x, int _y, int _button)
 {
 }
@@ -263,6 +279,7 @@ void GameObject::mouseReleased(int _x, int _y, int _button)
 {
 }
 
+// functions the same as root_update
 void GameObject::root_keyPressed(int key)
 {
 	if (key == 120) {
@@ -274,7 +291,7 @@ void GameObject::root_keyPressed(int key)
 void GameObject::keyPressed(int key)
 {
 }
-
+// ^^
 void GameObject::root_keyReleased(int key)
 {
 	if (key == 120) {
@@ -306,7 +323,7 @@ void GameObject::draw()
 	static bool initialized = false;
 	if (!initialized)
 	{
-		cout << "Error: User hasn't defined unique 'draw' function for a GameObject" << endl;
+		//cout << "Error: User hasn't defined unique 'draw' function for a GameObject" << endl;
 		initialized = true;
 	}
 }

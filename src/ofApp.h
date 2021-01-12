@@ -4,7 +4,6 @@
 #include "GameObject.h"
 #include "Controller.h"
 #include "Player.h"
-#include "Spring.h"
 #include "Object.h"
 #include "Springs.h"
 
@@ -19,6 +18,7 @@ class ofApp : public ofBaseApp{
 		void setup();
 		void update();
 		void draw();
+		void drawRequiredGUI();
 
 		void createNode();
 
@@ -36,12 +36,12 @@ class ofApp : public ofBaseApp{
 		void gotMessage(ofMessage msg);
 		
 		vector <GameObject*> vec;
-		vector <GameObject*>* GameObjects = &vec;
+		vector <GameObject*>* GameObjects = &vec; // the main vector of all objects in the scene
 
-		Controller* GameController;
+		Controller* GameController; // this controls global game properties (the selected object, gravity, etc)
 		guiController* gui_Controller;
-		EventManager Events;
-
-		Collisions* CollisionDetector;
+		
+		Collisions CollisionDetector;
+		EventManager Events; // simple system for allowing relevant interactions/gui interfacts - only used for the starting tutorial
 
 };

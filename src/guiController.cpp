@@ -83,7 +83,7 @@ void guiController::updateWorld()
 
 void guiController::updateCreateNodeValues()
 {
-	switch (GameController->getNewNodeName()) {
+	switch (GameController->getNewNodeType()) {
 		case 0:
 			name = "Mass";
 			break;

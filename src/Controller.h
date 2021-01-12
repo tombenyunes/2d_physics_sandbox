@@ -41,8 +41,8 @@ public:
 	void setMouseDragged(bool _value);
 	bool getMouseDragged();
 
-	void setNewNodeName(bool _value);
-	int getNewNodeName();
+	void setNewNodeType(bool _value);
+	int getNewNodeType();
 
 	void setUseHardCollisions(bool _value);
 	bool getUseHardCollisions();
