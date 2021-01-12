@@ -26,7 +26,7 @@ class GameObject;
 class Controller {
 
 public:
-	
+
 	Controller();
 
 	void makeActive(GameObject* _this);
@@ -67,5 +67,5 @@ private:
 	bool HARD_COLLISIONS;
 	bool GUI_VISIBLE;
 	bool USER_CAN_INPUT;
-	
+
 };

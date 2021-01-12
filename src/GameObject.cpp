@@ -28,6 +28,8 @@ GameObject::GameObject(ofVec2f _pos, ofColor _color)
 	friction_enabled = false;
 	ellipseCollider_enabled = false;
 	mouseHover_enabled = false;
+
+	node = -1;
 }
 
 // root update is called prir to the main update function of a gameobject and is responsible for handling object deletion and updating user-added modules - it automatically updates the main update funcion

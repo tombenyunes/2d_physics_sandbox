@@ -33,6 +33,7 @@ public:
 	ofVec2f pos;
 	ofVec2f prevPos;
 	float radius;
+	int node;
 
 	bool isPlayer;
 	bool isSpring;
