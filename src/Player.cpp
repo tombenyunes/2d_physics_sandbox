@@ -12,7 +12,7 @@ Player::Player(ofVec2f _pos, ofColor _color)
 
 	isPlayer = true;
 	mouse_down = false;
-	mouse_button = -1;
+	mouse_button = -1;	
 	aimingBoost = false;
 
 	// modules are updated automatically

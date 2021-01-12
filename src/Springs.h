@@ -4,7 +4,7 @@
 #include "GameObject.h"
 
 class Springs : public GameObject {
-
+	
 public:
 
 	Springs(ofVec2f _anchorPos, float _nodeRadius1, float _nodeMass1, float _nodeRadius2, float _nodeMass2, float _k, float _damping, float _springmass, Controller* _controller);
@@ -21,7 +21,7 @@ public:
 	void getNodeColor(int _node);
 
 	void mousePressed(int _x, int _y, int _button) override;
-	void mouseReleased(int _x, int _y, int _button) override;
+	void mouseReleased(int _x, int _y, int _button) override;	
 
 
 private:

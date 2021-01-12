@@ -36,7 +36,7 @@ void GameObject::root_update(vector<GameObject*>* _gameobjects, Controller* _con
 	if (deleteKeyDown) {
 		if (mouseOver) {
 			needs_to_be_deleted = true;
-		}
+		}		
 	}
 	if (!needs_to_be_deleted) {
 
@@ -67,7 +67,7 @@ void GameObject::root_update(vector<GameObject*>* _gameobjects, Controller* _con
 
 		update(); // <--- user defined update function for every gameobject
 	}
-	else {
+	else {		
 		cout << "Error: 'Dead' GameObject is still being updated" << endl;
 	}
 }
@@ -207,7 +207,7 @@ void GameObject::friction()
 // determines if the mouse is over an object
 void GameObject::mouseHover()
 {
-	if (CollisionDetector.EllipseCompare(pos, radius, ofVec2f(ofGetMouseX() - ofGetWidth() / 2, ofGetMouseY() - ofGetHeight() / 2), 0)) {
+	if (CollisionDetector.EllipseCompare(pos, radius, ofVec2f(ofGetMouseX()-ofGetWidth()/2, ofGetMouseY()-ofGetHeight()/2), 0)) {
 		if (GameController->getMouseDragged() == false) {
 			color = ofColor(255, 165, 0);
 			mouseOver = true;

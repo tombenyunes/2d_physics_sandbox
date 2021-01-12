@@ -13,7 +13,7 @@ void ofApp::setup()
 }
 
 void ofApp::update()
-{
+{	
 	// erase objects that need to be deleted and free memory
 	for (int i = 0; i < GameObjects->size(); i++) {
 		if ((*GameObjects)[i]->needs_to_be_deleted == true) {
@@ -115,11 +115,11 @@ void ofApp::keyReleased(int key)
 	}
 }
 
-void ofApp::mouseMoved(int x, int y)
+void ofApp::mouseMoved(int x, int y )
 {
 
 }
-
+ 
 void ofApp::mouseDragged(int x, int y, int button)
 {
 	if ((Events.fullInput) || (button == 0 && Events.canLMB) || (button == 2 && Events.canDrag)) {

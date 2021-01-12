@@ -14,9 +14,9 @@ public:
 	void updateValues(ofVec2f _pos, ofVec2f _vel, ofVec2f _accel, float _mass, bool _infmass, float _radius, bool _affectedByGravity, int panel);
 	void updateMultipleValues(ofVec2f _anchorpos, ofVec2f _nodePos1, ofVec2f _nodeVel1, ofVec2f _nodeAccel1, float _nodeMass1, float _nodeRadius1, ofVec2f _nodePos2, ofVec2f _nodeVel2, ofVec2f _nodeAccel2, float _nodeMass2, float _nodeRadius2, float _k, float _damping, float _springmass, bool _affectedByGravity);
 	void updateCreateNodeValues();
-
+	
 	void windowResized(int w, int h);
-
+	
 	void setClearAll();
 
 	Controller* GameController;
@@ -35,12 +35,12 @@ public:
 	ofxPanel create_node_gui;
 
 	// ----- Parameters ----- //
-
+	
 	// World
 	ofxButton newScene;
 	ofxToggle gravity;
 	ofxToggle hardCollisions;
-
+	
 	// Player
 	ofxLabel position;
 	ofxLabel velocity;
@@ -69,7 +69,7 @@ public:
 	ofxLabel nodeAccel1;
 	ofxFloatSlider nodeRadius1;
 	ofxFloatSlider nodeMass1;
-
+	
 	// node 2
 	ofxLabel nodePos2;
 	ofxLabel nodeVel2;
