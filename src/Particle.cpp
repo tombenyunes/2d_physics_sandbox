@@ -18,8 +18,8 @@ void Particle::update()
 {
 	friction = vel;
 	friction *= -1;
-	friction *= FRICTION;
-	accel += (friction*2);
+	friction *= FRICTION_FORCE;
+	accel += (friction * 2);
 	accel.limit(MAXIMUM_ACCELERATION);
 
 	vel += accel;

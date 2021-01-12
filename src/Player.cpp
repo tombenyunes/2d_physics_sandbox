@@ -8,91 +8,46 @@ Player::Player(ofVec2f _pos, ofColor _color)
 	vel.set(0);
 	accel.set(0);
 	radius = 35;
-	mass = 10;
+	mass = 500;
 
-	// Events
+	isPlayer = true;
 	mouse_down = false;
 	mouse_button = -1;
+	aimingBoost = false;
 
-	// Teleporting
-	readyToTeleport = true;
-	isTeleporting = false;
-
+	// modules are updated automatically
 	AddModule("screenBounce");
-	AddModule("gravity");
 	AddModule("ellipseCollider");
+	AddModule("gravity");
+	AddModule("friction");
 }
 
 void Player::update()
 {
-	//updateGUI();
-	if (isTeleporting) teleportPlayer();
-	updateMovementForces();
+	updateForces();
+	updateGUI();
+	resetForces();
 }
 
-ofVec2f Player::getTeleportVector()
+void Player::updateForces()
 {
-	int movementDirection;
-	if (vel.x > 0 && vel.y < 0) {
-		//cout << "right up" << endl;
-		movementDirection = 0;
-	}
-	else if (vel.x > 0 && vel.y > 0) {
-		//cout << "right down" << endl;
-		movementDirection = 1;
-	}
-	else if (vel.x < 0 && vel.y > 0) {
-		//cout << "left down" << endl;
-		movementDirection = 2;
-	}
-	else if (vel.x < 0 && vel.y < 0) {
-		//cout << "left up" << endl;
-		movementDirection = 3;
-	}
-	cout << vel << endl;
-	//return ((vel-pos) * 2 * -1);
-	return vel.scale(2);
-	//return { (float)ofGetMouseX() - ofGetWidth() / 2, (float)ofGetMouseY() - ofGetHeight() / 2 };
+	applyAllForces();
+	addForces(true);
 }
 
-void Player::teleportPlayer()
+void Player::applyAllForces()
 {
-	if (abs(pos.x - teleportTarget.x) < 1 || abs(pos.y - teleportTarget.y) < 1) {
-		isTeleporting = false;
-		//ofVec2f movementVec = pos - previousMousePos;
-		//movementVec.scale(5);
-		//accel += getMovementVector();
+	if (playerCanMove()) applyForce(accel, getMovementVector(), true, 0.15);
+}
+
+bool Player::playerCanMove()
+{
+	if (mouse_down && mouse_button == 0) {
+		return true;
 	}
 	else {
-		//float progress = (float)(ofGetFrameNum() % 100) / 100;
-		float progress = (float)(((int)(ofGetElapsedTimef() * 60)) % 100) / 100;
-
-		ofVec2f powInterpIn;
-		powInterpIn.x = ofNextPow2(progress);
-		powInterpIn.y = ofNextPow2(progress);
-
-		float sinInterp = sin(progress * (PI / 2));
-
-		ofVec2f newPos;
-		//newPos.x = ofLerp(pos.x, teleportTarget.x, powInterpIn.x/5);
-		//newPos.y = ofLerp(pos.y, teleportTarget.y, powInterpIn.y/5);
-		//newPos.x = ofLerp(pos.x, teleportTarget.x, sinInterp*2);
-		//newPos.y = ofLerp(pos.y, teleportTarget.y, sinInterp*2);
-		newPos.x = ofLerp(pos.x, teleportTarget.x, 0.1);
-		newPos.y = ofLerp(pos.y, teleportTarget.y, 0.1);
-		pos = newPos;
+		return false;
 	}
-}
-
-ofVec2f Player::applyFriction()
-{
-	//if (!mouse_down) {
-		friction = vel * -1;
-		//friction.normalize(); // normalizing breaks ui
-		friction *= FRICTION;
-	//}
-	
-	return accel += friction;
 }
 
 ofVec2f Player::getMovementVector()
@@ -102,78 +57,39 @@ ofVec2f Player::getMovementVector()
 	return movementVec;
 }
 
-ofVec2f Player::getAcceleration()
+void Player::updateGUI()
 {
-	accel = applyFriction();
-	if (mouse_down && mouse_button == 0) {
-		accel += getMovementVector();
+	static bool initiai_values_triggered = false; // initial values are sent to the gui_manager initially, after which it will update the results internally, and the object can receive the values back
+	if (!initiai_values_triggered) {
+		initiai_values_triggered = true;
+		gui_Controller->updateValues(pos, vel, accel, mass, infiniteMass, radius, affectedByGravity, 1);
 	}
-	return accel.limit(MAXIMUM_ACCELERATION);
+	else {
+		gui_Controller->updateValues(pos, vel, accel, gui_Controller->mass, gui_Controller->infiniteMass, gui_Controller->radius, gui_Controller->affectedByGravity, 1); // receiving and updating the results from the gui_controller
+		if (infiniteMass) mass = 9999999999999999999; else mass = gui_Controller->mass;
+		radius = gui_Controller->radius;
+		infiniteMass = gui_Controller->infiniteMass;
+		affectedByGravity = gui_Controller->affectedByGravity;
+	}
 }
 
-ofVec2f Player::getInterpolatedPosition()
+void Player::resetForces()
 {
-	//ofVec2f newPos;
-	//newPos.x = ofLerp(pos.x, pos.x + vel.x, 0.75);
-	//newPos.y = ofLerp(pos.y, pos.y + vel.y, 0.75);
-	//return newPos;
-
-	int progress = (ofGetFrameNum() % 100) / 100;
-	ofVec2f powInterpIn;
-	powInterpIn.x = ofNextPow2(progress);
-	powInterpIn.y = ofNextPow2(progress);
-
-	float sinInterp = sin(progress * (PI / 2));
-
-	ofVec2f newPos;
-	newPos.x = ofLerp(pos.x, pos.x + vel.x, powInterpIn.x);
-	newPos.y = ofLerp(pos.y, pos.y + vel.y, powInterpIn.y);
-	return newPos;
-}
-
-void Player::updateMovementForces()
-{
-	vel += getAcceleration();
-	vel.limit(MAXIMUM_VELOCITY);
-	pos = getInterpolatedPosition();
-	
-	updateGUI();
-
 	accel.set(0);
 }
 
-void Player::updateGUI()
-{
-	static bool initiai_values_triggered = false;
-	if (!initiai_values_triggered) {
-		initiai_values_triggered = true;
-		gui_Controller->updateValues(pos, vel, accel, mass, radius, 1);
-	}
-	else {
-		gui_Controller->updateValues(pos, vel, accel, gui_Controller->mass, gui_Controller->radius, 1);
-		mass = gui_Controller->mass;
-		radius = gui_Controller->radius;
-	}
-	//mass = gui_Controller->mass;
-}
-
-void Player::drawParticleTrail()
-{
-	if (mouse_down && mouse_button == 0) {
-		GameObject* particle = new Particle{ pos /*+ ofRandom(-radius/3, radius/3)*/, getMovementVector() * -1, 4, ofColor(255), 255 };
-		GameObjects->push_back(particle);
-	}
-}
-
-ofVec3f Player::drawVelPath()
-{
-	ofVec2f vec = pos - ofVec2f(ofGetMouseX() - ofGetWidth() / 2, ofGetMouseY() - ofGetHeight() / 2);
-	return ofVec3f(vec.x * ofGetWidth(), vec.y * ofGetHeight(), 0);
-}
 
 // ----- EVENT FUNCTIONS ----- //
 
+
 void Player::mousePressed(int _x, int _y, int _button)
+{
+	mouse_down = true;
+	mouse_button = _button;
+	mouse_pos = { (float)_x, (float)_y };
+}
+
+void Player::mouseDragged(int _x, int _y, int _button)
 {
 	mouse_down = true;
 	mouse_button = _button;
@@ -195,16 +111,7 @@ void Player::keyPressed(int key)
 	}
 	if (key == 32)
 	{
-		if (readyToTeleport == true) {
-			/*readyToTeleport = false;
-			isTeleporting = true;
-			teleportTarget = getTeleportVector();
-			vel.set(0);
-			accel.set(0);
-			ofResetElapsedTimeCounter();
-			previousMousePos = mouse_pos;*/
-			aiming = true;
-		}
+		aimingBoost = true;
 	}
 }
 
@@ -212,45 +119,60 @@ void Player::keyReleased(int key)
 {
 	if (key == 32)
 	{
-		readyToTeleport = true;
-		aiming = false;
-
-		accel += pos - ofVec2f(ofGetMouseX() - ofGetWidth() / 2, ofGetMouseY() - ofGetHeight() / 2);
-		vel += (accel * 10).limit(10);
-		pos = getInterpolatedPosition();
+		boostPlayer();
 	}
 }
 
+void Player::boostPlayer()
+{
+	aimingBoost = false;
+	if (vel.length() < 5) {
+		applyForce(accel, (pos - ofVec2f(ofGetMouseX() - ofGetWidth() / 2, ofGetMouseY() - ofGetHeight() / 2)), true, 10);
+	}
+}
+
+
 // ----- RENDER LOOP ----- //
+
 
 void Player::draw()
 {
 	ofSetColor(255);
 
-	if (aiming) {
-		ofPushMatrix();
-
-		glEnable(GL_LINE_STIPPLE);
-		glLineStipple(8, 0xAAAA);
-		glBegin(GL_LINES);
-		glVertex3f(pos.x, pos.y, 0);		
-		glVertex3f(drawVelPath().x, drawVelPath().y, drawVelPath().z);
-		glEnd();
-		glDisable(GL_LINE_STIPPLE);
-		glFlush();
-
-		//ofSetLineWidth(0.5);
-		//ofSetColor(125);
-		//ofLine(ofVec3f(pos.x, pos.y, 0), drawVelPath());
-		
-		ofPopMatrix();
-	}
-
+	if (aimingBoost) drawBoostDirection();
 	drawParticleTrail();
 
 	ofSetColor(color);
 	ofFill();
-	float mult = (ofMap(vel.length(), 0, 15, 1, 0.25));
-	ofEllipse(pos.x, pos.y, radius * mult, radius * mult);
-	//ofLine(ofVec3f(pos.x, pos.y, 0), ofVec3f(vel.x*ofGetWidth(), vel.y*ofGetHeight(), 0));
+	ofEllipse(pos.x, pos.y, radius, radius);
+}
+
+void Player::drawBoostDirection() // draws dotted line in the direction the player is aiming
+{
+	ofPushMatrix();
+
+	glEnable(GL_LINE_STIPPLE);
+	glLineStipple(8, 0xAAAA);
+	glBegin(GL_LINES);
+	glVertex3f(pos.x, pos.y, 0);
+	glVertex3f(drawVelPath().x, drawVelPath().y, drawVelPath().z);
+	glEnd();
+	glDisable(GL_LINE_STIPPLE);
+	glFlush();
+
+	ofPopMatrix();
+}
+
+ofVec3f Player::drawVelPath()
+{
+	ofVec2f vec = pos - ofVec2f(ofGetMouseX() - ofGetWidth() / 2, ofGetMouseY() - ofGetHeight() / 2);
+	return ofVec3f(vec.x * ofGetWidth(), vec.y * ofGetHeight(), 0);
+}
+
+void Player::drawParticleTrail() // draws particle trail following the player when moving
+{
+	if (mouse_down && mouse_button == 0) {
+		GameObject* particle = new Particle{ pos /*+ ofRandom(-radius/3, radius/3)*/, getMovementVector() * -1, 4, ofColor(255), 255 };
+		GameObjects->push_back(particle);
+	}
 }
